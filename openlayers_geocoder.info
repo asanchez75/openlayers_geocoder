@@ -1,3 +1,5 @@
+; $Id$
+
 name = OpenLayers Geocoder
 description = Provides OpenLayers CCK widget with geocoding capabilities.
 core = 6.x

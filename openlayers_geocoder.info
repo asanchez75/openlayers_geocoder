@@ -1,0 +1,6 @@
+name = OpenLayers Geocoder
+description = Provides OpenLayers CCK widget with geocoding capabilities.
+core = 6.x
+package = OpenLayers
+dependencies[] = openlayers_cck
+dependencies[] = openlayers_layers

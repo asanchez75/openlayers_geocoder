@@ -1,10 +1,13 @@
 <?php
+// $Id$
+
 /**
  * @file
  * Add geocoding capabilities to OpenLayer CCK widget.
  *
  * @ingroup openlayers
  */
+
 
 /**
  * Implementation of hook_init()

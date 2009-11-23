@@ -1,6 +1,12 @@
 <?php
 // $Id$
 
+/**
+ * Implementation of hook_install()
+ */
+function openlayers_geocoder_install() {
+  drupal_install_schema('openlayers_geocoder');
+}
 
 /**
  * Implementation of hook_schema().

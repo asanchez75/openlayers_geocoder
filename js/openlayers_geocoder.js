@@ -46,7 +46,7 @@ Drupal.Geocoder.prototype.process = function (query) {
   $.ajax({
     type: 'POST',
     url: this.data.db.uri + '/coordinates',
-    data: 'query=' + query,
+    data: 'query=' + query + '&fieldname=' + fieldname,
     dataType: 'json',
     success: function(point){
 
@@ -59,6 +59,13 @@ Drupal.Geocoder.prototype.process = function (query) {
       $(InputId).attr('value', 'POINT(' + point.longitude + ' ' + point.latitude + ')');
       OL.CCK.populateMap(MapId);
       OL.maps[MapId].map.zoomToExtent(bounds);
+      
+      // Adding CCK fields autocompletion
+      if (point.fields) {
+    	jQuery.each(point.fields, function () {
+    		$("input[name*='" + this.name + "']").val(this.value);
+    	});
+      }	  
    }
  });
 

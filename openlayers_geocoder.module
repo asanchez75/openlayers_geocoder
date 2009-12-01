@@ -231,9 +231,9 @@ function openlayers_geocoder_coordinates() {
   $location['longitude'] = 0;
   $location['box'] = array();
   $location['fields'] = array();
+
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
-
   if ($result = openlayers_geocoder_query($query)) {
 
     if ($result->Status->code == 200) {
@@ -266,8 +266,8 @@ function openlayers_geocoder_coordinates() {
  */
 function openlayers_geocoder_query($query) {
   if($key = variable_get('openlayers_layers_google_api', variable_get('googlemap_api_key', ''))) {
-    $path = check_url('http://maps.google.com/maps/geo?q=' . str_replace(' ', '+', $query) . '&output=json&key=' . $key);
-    $response = file_get_contents($path);
+    $language = language_default();
+    $response = file_get_contents('http://maps.google.com/maps/geo?q='. str_replace(' ', '+', $query) .'&output=json&key='. $key. '&hl='. $language->language);
     module_load_include('php', 'openlayers_geocoder', 'includes/json/JSON');
     $json = new Services_JSON();
     return $json->decode($response);

@@ -64,6 +64,9 @@ Drupal.Geocoder.prototype.process = function (query) {
       if (point.fields) {
     	jQuery.each(point.fields, function () {
     		$("input[name*='" + this.name + "']").val(this.value);
+    		if (!this.override) {
+        	  $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
+    		}
     	});
       }	  
    }

@@ -217,6 +217,7 @@ function openlayers_geocoder_coordinates() {
           if ($settings['enable']) {
             $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
             $location['fields'][$name]['name'] = $name;
+            $location['fields'][$name]['override'] = $settings['override'];
           }
         }
       }

@@ -202,9 +202,6 @@ function openlayers_geocoder_coordinates() {
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
 
-  $query = 'Via Visconti D\'aragona milano';
-  $fieldname = 'field_centre_location';
-
   if ($result = openlayers_geocoder_query($query)) {
 
     if ($result->Status->code == 200) {

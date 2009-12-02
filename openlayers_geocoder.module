@@ -135,52 +135,20 @@ function openlayers_geocoder_widget(&$form, &$form_state, $field, $items, $delta
   return $element;
 }
 
-
-///**
-// * Implementaion of hook_elements()
-// */
-//function openlayers_geocoder_elements() {
-//  return array(
-//    'openlayers_wkt_widget' => array(
-//      '#process' => array('openlayers_geocoder_element_process'),
-//      '#element_validate' => array('openlayers_geocoder_element_validate'),
-//    ),
-//  );
-//}
-//
-///**
-// * Element validation callback
-// * @see openlayers_geocoder_elements()
-// */
-//function openlayers_geocoder_element_validate(&$form, &$form_state) {
-//  return TRUE;
-//}
-//
-///**
-// * Element process callback.
-// */
-//function openlayers_geocoder_element_process($element, $edit, &$form_state, &$form) {
-//  return $element;
-//}
-
-
 /**
  * Implementation of hook_nodeapi().
  */
-//function openlayers_geocoder_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-//  switch ($op) {
-//    case 'load':
-//      break;
-//    case 'insert':
-//    case 'update':
-//      break;
-//    case 'delete':
-//      break;
-//  }
-//}
-
-
-
+function openlayers_geocoder_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'load':
+      break;
+    case 'insert':
+    case 'update':
+      break;
+    case 'delete':
+      break;
+  }
+}
 
 /**
  * Implementation of hook_theme().
@@ -196,7 +164,6 @@ function openlayers_geocoder_theme($existing, $type, $theme, $path) {
     ),
   );
 }
-
 
 /**
  * Location list from Google geocoding web service
@@ -234,6 +201,10 @@ function openlayers_geocoder_coordinates() {
 
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
+
+  $query = 'Via Visconti D\'aragona milano';
+  $fieldname = 'field_centre_location';
+
   if ($result = openlayers_geocoder_query($query)) {
 
     if ($result->Status->code == 200) {
@@ -267,7 +238,7 @@ function openlayers_geocoder_coordinates() {
 function openlayers_geocoder_query($query) {
   if($key = variable_get('openlayers_layers_google_api', variable_get('googlemap_api_key', ''))) {
     $language = language_default();
-    $response = file_get_contents('http://maps.google.com/maps/geo?q='. str_replace(' ', '+', $query) .'&output=json&key='. $key. '&hl='. $language->language);
+    $response = file_get_contents('http://maps.google.com/maps/geo?q='. str_replace(' ', '+', $query) .'&output=json&key='. $key. '&hl='. $language->language .'&oe=utf-8');
     module_load_include('php', 'openlayers_geocoder', 'includes/json/JSON');
     $json = new Services_JSON();
     return $json->decode($response);

@@ -2,6 +2,7 @@
 
 Drupal.behaviors.openlayers_geocoder = function (context) {
 
+  if (Drupal.jsAC) {
   /**
    * Hides the autocomplete suggestions
    */
@@ -24,6 +25,9 @@ Drupal.behaviors.openlayers_geocoder = function (context) {
       geocoder.process(this.input.value);
     }
   };
+  
+  }
+	  
   
 };
 
@@ -49,26 +53,27 @@ Drupal.Geocoder.prototype.process = function (query) {
     data: 'query=' + query + '&fieldname=' + fieldname,
     dataType: 'json',
     success: function(point){
-
-      var MapId = 'openlayers-cck-widget-map-' + fieldname;
-      var projection = new OpenLayers.Projection(OL.maps[MapId].map.baseLayer.projection.getCode());
-      var displayProjection = new OpenLayers.Projection(OL.maps[MapId].map.displayProjection.getCode());
-      var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
-      var InputId = 'input#edit-' + dashed + '-openlayers-wkt-hidden';
-      
-      $(InputId).attr('value', 'POINT(' + point.longitude + ' ' + point.latitude + ')');
-      OL.CCK.populateMap(MapId);
-      OL.maps[MapId].map.zoomToExtent(bounds);
-      
-      // Adding CCK fields autocompletion
-      if (point.fields) {
-    	jQuery.each(point.fields, function () {
-    		$("input[name*='" + this.name + "']").val(this.value);
-    		if (!this.override) {
-        	  $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
-    		}
-    	});
-      }	  
+	  if (point.longitude && point.latitude) {
+	      var MapId = 'openlayers-cck-widget-map-' + fieldname;
+	      var projection = new OpenLayers.Projection(OL.maps[MapId].map.baseLayer.projection.getCode());
+	      var displayProjection = new OpenLayers.Projection(OL.maps[MapId].map.displayProjection.getCode());
+	      var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
+	      var InputId = 'input#edit-' + dashed + '-openlayers-wkt-hidden';
+	      
+	      $(InputId).attr('value', 'POINT(' + point.longitude + ' ' + point.latitude + ')');
+	      OL.CCK.populateMap(MapId);
+	      OL.maps[MapId].map.zoomToExtent(bounds);
+	      
+	      // Adding CCK fields autocompletion
+	      if (point.fields) {
+	    	jQuery.each(point.fields, function () {
+	    		$("input[name*='" + this.name + "']").val(this.value);
+	    		if (!this.override) {
+	        	  $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
+	    		}
+	    	});
+	      }	  
+	  }
    }
  });
 

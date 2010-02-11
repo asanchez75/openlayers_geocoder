@@ -27,7 +27,6 @@ Drupal.behaviors.openlayers_geocoder = function (context) {
   };
   
   }
-	  
   
 };
 
@@ -46,7 +45,7 @@ Drupal.Geocoder.prototype.process = function (query) {
   
   var fieldname = $(this.data.input).attr('fieldname');
   var dashed = $(this.data.input).attr('dashed');
-
+  
   $.ajax({
     type: 'POST',
     url: this.data.db.uri + '/coordinates',
@@ -54,25 +53,26 @@ Drupal.Geocoder.prototype.process = function (query) {
     dataType: 'json',
     success: function(point){
 	  if (point.longitude && point.latitude) {
-	      var MapId = 'openlayers-cck-widget-map-' + fieldname;
-	      var projection = new OpenLayers.Projection(OL.maps[MapId].map.baseLayer.projection.getCode());
-	      var displayProjection = new OpenLayers.Projection(OL.maps[MapId].map.displayProjection.getCode());
-	      var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
-	      var InputId = 'input#edit-' + dashed + '-openlayers-wkt-hidden';
 	      
-	      $(InputId).attr('value', 'POINT(' + point.longitude + ' ' + point.latitude + ')');
-	      OL.CCK.populateMap(MapId);
-	      OL.maps[MapId].map.zoomToExtent(bounds);
+      var mapElement = $('#openlayers-cck-widget-map-' + fieldname);
+      var data = $(mapElement).data('openlayers');
+      var googleProjection = new OpenLayers.Projection('EPSG:900913');
+      var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(data.map.options.projection, googleProjection);
+      var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(data.map.options.projection, googleProjection);
+      data.openlayers.zoomToExtent(bounds);
+      
+      var vectorLayers = data.openlayers.getLayersBy('CLASS_NAME', "OpenLayers.Layer.Vector");
+      vectorLayers[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
 	      
-	      // Adding CCK fields autocompletion
-	      if (point.fields) {
-	    	jQuery.each(point.fields, function () {
-	    		$("input[name*='" + this.name + "']").val(this.value);
-	    		if (!this.override) {
-	        	  $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
-	    		}
-	    	});
-	      }	  
+      // Adding CCK fields autocompletion
+      if (point.fields) {
+    	jQuery.each(point.fields, function () {
+    		$("input[name*='" + this.name + "']").val(this.value);
+    		if (!this.override) {
+        	  $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
+    		}
+    	});
+      }	  
 	  }
    }
  });

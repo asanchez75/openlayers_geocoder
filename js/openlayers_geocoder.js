@@ -54,17 +54,15 @@ Drupal.Geocoder.prototype.process = function (query) {
     success: function(point){
 	  if (point.longitude && point.latitude) {
 
-        var mapElement = $('#openlayers-cck-widget-map-' + fieldname);
-        var data = $(mapElement).data('openlayers');
-        
-        // Get point geometry and bounds and apply transformation from Google projection. 
-        var googleProjection = new OpenLayers.Projection('EPSG:900913');
-        var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(data.map.options.projection, googleProjection);
-        var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(data.map.options.projection, googleProjection);
-        data.openlayers.zoomToExtent(bounds);
-      
-        // Add point. For each new search all previous features will be removed.
+        var data = $('#openlayers-cck-widget-map-' + fieldname).data('openlayers');
+        var sourceProjection = new OpenLayers.Projection('EPSG:4326');
+        var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
         var vectorLayers = data.openlayers.getLayersBy('CLASS_NAME', "OpenLayers.Layer.Vector");
+        var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(sourceProjection, projection);
+        var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(sourceProjection, projection);
+
+        // Add point. For each new search all previous features will be removed.
+        data.openlayers.zoomToExtent(bounds);
         vectorLayers[0].removeFeatures(vectorLayers[0].features);
         vectorLayers[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
 	      

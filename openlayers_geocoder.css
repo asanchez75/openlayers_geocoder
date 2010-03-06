@@ -1,5 +1,11 @@
 /* $Id$ */
 
 .readonly {
-  background-color: #EEEEEE;
+  background-color: #EEEEEE !important;
+}
+span.openlayers-geocoder-result.detail-row-1 {
+  font-weight: bold; 
+}
+span.openlayers-geocoder-result.detail-row-2 {
+  font-size: .9em;
 }

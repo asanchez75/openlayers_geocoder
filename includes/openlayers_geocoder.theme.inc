@@ -28,7 +28,7 @@ function theme_openlayers_geocoder_widget_autocompletion_settings(&$form) {
  * @param $result
  *  Geocoding result
  */
-function theme_openlayers_geocode_result($result) {
+function theme_openlayers_geocoder_result($result) {
   return '';
 }
 

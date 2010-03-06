@@ -14,6 +14,7 @@
 function openlayers_geocoder_token_list($type = 'all') {
   if ($type == 'geocoder') {
 
+    $tokens = array();
     $tokens['geocoder']['address'] = t('Full address');
     $tokens['geocoder']['thoroughfare'] = t('Thoroughfare (<em>i.e. street name + number</em>)');
     $tokens['geocoder']['postal_code'] = t('Postal code');
@@ -37,6 +38,7 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
 
     $location = openlayers_geocoder_parse_response($object->Placemark[0]);
 
+    $tokens = array();
     $tokens['address'] = $location['address'];
     $tokens['accuracy'] = $location['Accuracy'];
     $tokens['administrative_area'] = $location['AdministrativeAreaName'];

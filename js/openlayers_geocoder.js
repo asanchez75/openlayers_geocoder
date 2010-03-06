@@ -55,11 +55,11 @@ Drupal.Geocoder.prototype.process = function (query) {
 	  if (point.longitude && point.latitude) {
 
         var data = $('#openlayers-cck-widget-map-' + fieldname).data('openlayers');
-        var sourceProjection = new OpenLayers.Projection('EPSG:4326');
+        var displayProjection = new OpenLayers.Projection('EPSG:' + data.map.displayProjection);
         var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
         var vectorLayers = data.openlayers.getLayersBy('CLASS_NAME', "OpenLayers.Layer.Vector");
-        var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(sourceProjection, projection);
-        var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(sourceProjection, projection);
+        var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
+        var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 
         // Add point. For each new search all previous features will be removed.
         data.openlayers.zoomToExtent(bounds);

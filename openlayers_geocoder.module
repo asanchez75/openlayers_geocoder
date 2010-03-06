@@ -13,7 +13,6 @@
  * Implementation of hook_init()
  */
 function openlayers_geocoder_init() {
-  drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') .'/openlayers_geocoder.css', 'module');
   module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.theme');
   module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.token');
 }
@@ -72,7 +71,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         );
 
         foreach (content_fields() as $name => $field) {
-          if ($field['type_name'] == arg(3) && $field['type'] == 'text') {
+          if ($field['type_name'] == arg(3) && $field['widget']['type'] == 'text_textfield') {
             $row = array();
             $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_enable']);
             $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_override']);
@@ -112,6 +111,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
  */
 function openlayers_geocoder_widget(&$form, &$form_state, $field, $items, $delta = 0) {
 
+  drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') .'/openlayers_geocoder.css');
   drupal_add_js(drupal_get_path('module', 'openlayers_geocoder') .'/js/openlayers_geocoder.js');
 
   $element = array();
@@ -136,28 +136,14 @@ function openlayers_geocoder_widget(&$form, &$form_state, $field, $items, $delta
 }
 
 /**
- * Implementation of hook_nodeapi().
- */
-function openlayers_geocoder_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  switch ($op) {
-    case 'load':
-      break;
-    case 'insert':
-    case 'update':
-      break;
-    case 'delete':
-      break;
-  }
-}
-
-/**
  * Implementation of hook_theme().
  */
 function openlayers_geocoder_theme($existing, $type, $theme, $path) {
   return array(
-    'openlayers_geocode_result' => array(
+    'openlayers_geocoder_result' => array(
       'arguments' => array('result' => NULL),
-      'file' => 'includes/openlayers_geocoder.theme.inc',
+      'template' => 'openlayers-geocoder-result',
+      'path' => drupal_get_path('module', 'openlayers_geocoder') .'/theme',
     ),
     'openlayers_geocoder_widget_autocompletion_settings' => array(
       'arguments' => array('form' => NULL),
@@ -179,7 +165,7 @@ function openlayers_geocoder_autocomplete($query = '') {
   if ($result = openlayers_geocoder_query($query)) {
     if ($result->Status->code == 200) {
       foreach ($result->Placemark as $placemark) {
-        $locations[$placemark->address] = $placemark->address;
+        $locations[$placemark->address] = theme('openlayers_geocoder_result', openlayers_geocoder_parse_response($placemark));
       }
     }
   }

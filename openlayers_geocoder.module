@@ -262,7 +262,7 @@ function openlayers_geocoder_response($address) {
           $components['country_code'] = $component->short_name;
         }
       }
-      $location['address'] = $result->formatted_address;
+      $components['street_address'] = $location['address'] = $result->formatted_address;
       $location['components'] = $components;
       $location['location'] = (array) $result->geometry->location;
       $location['bounds'] = (array) $result->geometry->bounds;

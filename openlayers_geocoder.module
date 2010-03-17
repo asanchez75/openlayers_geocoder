@@ -8,6 +8,9 @@
  * @ingroup openlayers
  */
 
+define('GOOGLE_GEOCODER_URL', 'http://maps.google.com/maps/api/geocode/json?');
+define('GOOGLE_GEOCODER_STATUS_OK', 'OK');
+
 
 /**
  * Implementation of hook_init()
@@ -162,11 +165,9 @@ function openlayers_geocoder_theme($existing, $type, $theme, $path) {
 function openlayers_geocoder_autocomplete($query = '') {
 
   $locations = array();
-  if ($result = openlayers_geocoder_query($query)) {
-    if ($result->Status->code == 200) {
-      foreach ($result->Placemark as $placemark) {
-        $locations[$placemark->address] = theme('openlayers_geocoder_result', openlayers_geocoder_parse_response($placemark));
-      }
+  if ($response = openlayers_geocoder_response($query)) {
+    foreach ($response as $location) {
+      $locations[$location['address']] = theme('openlayers_geocoder_result', $location['components']);
     }
   }
   drupal_json($locations);
@@ -188,23 +189,24 @@ function openlayers_geocoder_coordinates() {
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
 
-  if ($result = openlayers_geocoder_query($query)) {
+  if ($response = openlayers_geocoder_response($query)) {
 
-    if ($result->Status->code == 200) {
-      if ($result->Placemark) {
-        $location['latitude'] = $result->Placemark[0]->Point->coordinates[1];
-        $location['longitude'] = $result->Placemark[0]->Point->coordinates[0];
-        $location['box'] = $result->Placemark[0]->ExtendedData->LatLonBox;
-      }
-      $field = content_fields($fieldname);
-      if (module_exists('token') && $field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
-        $fields = openlayers_geocoder_widget_parse_settings($field['widget']);
-        foreach ($fields as $name => $settings) {
-          if ($settings['enable']) {
-            $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
-            $location['fields'][$name]['name'] = $name;
-            $location['fields'][$name]['override'] = $settings['override'];
-          }
+    $result = array_shift($response);
+    $location['latitude'] = $result['location']['lat'];
+    $location['longitude'] = $result['location']['lng'];
+    $location['box']['north'] = $result['bounds']['northeast']->lat;
+    $location['box']['east'] = $result['bounds']['northeast']->lng;
+    $location['box']['south'] = $result['bounds']['southwest']->lat;
+    $location['box']['west'] = $result['bounds']['southwest']->lng;
+
+    $field = content_fields($fieldname);
+    if (module_exists('token') && $field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
+      $fields = openlayers_geocoder_widget_parse_settings($field['widget']);
+      foreach ($fields as $name => $settings) {
+        if ($settings['enable']) {
+          $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
+          $location['fields'][$name]['name'] = $name;
+          $location['fields'][$name]['override'] = $settings['override'];
         }
       }
     }
@@ -214,22 +216,60 @@ function openlayers_geocoder_coordinates() {
 
 /**
  * Query Google geocoding web service
- * @param $query
+ * @param $address
  *    Address or location name
  * @return
  *    Array of placemarks
  */
-function openlayers_geocoder_query($query) {
-  if($key = variable_get('openlayers_layers_google_api', variable_get('googlemap_api_key', ''))) {
-    $language = language_default();
-    $response = file_get_contents('http://maps.google.com/maps/geo?q='. str_replace(' ', '+', $query) .'&output=json&key='. $key. '&hl='. $language->language .'&oe=utf-8');
-    module_load_include('php', 'openlayers_geocoder', 'includes/json/JSON');
-    $json = new Services_JSON();
-    return $json->decode($response);
+function openlayers_geocoder_response($address) {
+
+  $locations = $args = array();
+
+  // The address that you want to geocode.
+  $args['address'] = str_replace(' ', '+', $address);
+
+  // The language in which to return results. If "language" is not supplied,
+  // the geocoder will attempt to use the native language of the domain
+  // from which the request is sent wherever possible.
+  $language = language_default();
+  $args['language'] = $language->language;
+
+  // Response encoding.
+  $args['oe'] = 'utf-8';
+
+  //  Indicates whether or not the geocoding request comes from a device with a location sensor. This value must be either true or false.
+  $args['sensor'] = 'false';
+
+  //The textual latitude/longitude value for which you wish to obtain the closest, human-readable address.
+  // $args['latlng'] = '40.714224,-73.961452';
+
+  // The bounding box of the viewport within which to bias geocode results more prominently.
+  // $args['bounds'] = '';
+
+  // The region code, specified as a ccTLD ("top-level domain") two-character value.
+  // $args['region'] = '';
+
+  $query = http_build_query($args, '', '&');
+  $response = json_decode(file_get_contents(GOOGLE_GEOCODER_URL . $query));
+
+  if ($response->status == GOOGLE_GEOCODER_STATUS_OK) {
+    foreach ($response->results as $result) {
+      $location = $components = array();
+      foreach ($result->address_components as $component) {
+        $key = $component->types[0];
+        $components[$key] = $component->long_name;
+        if ($key == 'country') {
+          $components['country_code'] = $component->short_name;
+        }
+      }
+      $location['address'] = $result->formatted_address;
+      $location['components'] = $components;
+      $location['location'] = (array) $result->geometry->location;
+      $location['bounds'] = (array) $result->geometry->bounds;
+      $locations[] = $location;
+    }
   }
-  else {
-    return NULL;
-  }
+  return $locations;
 }
 
 /**

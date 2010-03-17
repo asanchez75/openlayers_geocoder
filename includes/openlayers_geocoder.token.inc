@@ -15,16 +15,37 @@ function openlayers_geocoder_token_list($type = 'all') {
   if ($type == 'geocoder') {
 
     $tokens = array();
-    $tokens['geocoder']['address'] = t('Full address');
-    $tokens['geocoder']['thoroughfare'] = t('Thoroughfare (<em>i.e. street name + number</em>)');
-    $tokens['geocoder']['postal_code'] = t('Postal code');
-    $tokens['geocoder']['locality'] = t('Locality (<em>i.e. city or town name</em>)');
-    $tokens['geocoder']['dependent_locality'] = t('Dependent locality');
-    $tokens['geocoder']['sub_administrative_area'] = t('Sub-administrative area');
-    $tokens['geocoder']['administrative_area'] = t('Administrative area');
-    $tokens['geocoder']['country'] = t('Country name');
+    $tokens['geocoder']['street_address'] = t('Indicates a precise street address.');
+    $tokens['geocoder']['route'] = t('Indicates a named route (such as "US 101").');
+    $tokens['geocoder']['intersection'] = t('Indicates a major intersection, usually of two major roads.');
+    $tokens['geocoder']['political'] = t('Indicates a political entity. Usually, this type indicates a polygon of some civil administration.');
+    $tokens['geocoder']['country'] = t('Indicates the national political entity, and is typically the highest order type returned by the Geocoder.');
     $tokens['geocoder']['country_code'] = t('Country code (<em>in <a href="!url" target="_blank">ISO 3166-1</a> format</em>).', array('!url' => 'http://www.iso.org/iso/english_country_names_and_code_elements'));
-    $tokens['geocoder']['accuracy'] = t('Accurancy level (<em>see <a href="!url" target="_blank">Geocoding Accuracy</a></em>)', array('!url' => 'http://code.google.com/apis/maps/documentation/geocoding/index.html#GeocodingAccuracy'));
+    $tokens['geocoder']['administrative_area_level_1'] = t('Indicates a first-order civil entity below the country level. Within the United States, these administrative levels are states. Not all nations exhibit these administrative levels.');
+    $tokens['geocoder']['administrative_area_level_2'] = t('Indicates a second-order civil entity below the country level. Within the United States, these administrative levels are counties. Not all nations exhibit these administrative levels.');
+    $tokens['geocoder']['administrative_area_level_3'] = t('Indicates a third-order civil entity below the country level. This type indicates a minor civil division. Not all nations exhibit these administrative levels.');
+    $tokens['geocoder']['colloquial_area'] = t('Indicates a commonly-used alternative name for the entity.');
+    $tokens['geocoder']['locality'] = t('Indicates an incorporated city or town political entity.');
+    $tokens['geocoder']['sublocality'] = t('Indicates an first-order civil entity below a locality');
+    $tokens['geocoder']['neighborhood'] = t('Indicates a named neighborhood');
+    $tokens['geocoder']['premise'] = t('Indicates a named location, usually a building or collection of buildings with a common name');
+    $tokens['geocoder']['subpremise'] = t('Indicates a first-order entity below a named location, usually a singular building within a collection of buildings with a common name');
+    $tokens['geocoder']['postal_code'] = t('Indicates a postal code as used to address postal mail within the country.');
+    $tokens['geocoder']['natural_feature'] = t('Indicates a prominent natural feature.');
+    $tokens['geocoder']['airport'] = t('Indicates an airport.');
+    $tokens['geocoder']['park'] = t('Indicates a named park.');
+    $tokens['geocoder']['point_of_interest'] = t('Indicates a named point of interest. Typically, these "POI"s are prominent local entities that don\'t easily fit in another category such as "Empire State Building" or "Statue of Liberty."');
+    $tokens['geocoder']['post_box'] = t('Indicates a specific postal box.');
+    $tokens['geocoder']['street_number'] = t('Indicates the precise street number.');
+    $tokens['geocoder']['floor'] = t('Indicates the floor of a building address.');
+    $tokens['geocoder']['room'] = t('Indicates the room of a building address.');
+
+    // Keep v2 tokens for backward compatibility
+    $tokens['geocoder']['address'] = t(' <b>Deprecated: use "street_address" instead.</b> Full address');
+    $tokens['geocoder']['thoroughfare'] = t(' <b>Deprecated: use "route" or "street_address" instead.</b> Thoroughfare (<em>i.e. street name + number</em>)');
+    $tokens['geocoder']['administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_1" instead.</b> Administrative area');
+    $tokens['geocoder']['sub_administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_2" instead.</b> Sub-administrative area');
+    $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');
 
     return $tokens;
   }
@@ -34,43 +55,22 @@ function openlayers_geocoder_token_list($type = 'all') {
  * Implementation of hook_token_values()
  */
 function openlayers_geocoder_token_values($type, $object = NULL, $options = array()) {
+
   if ($type == 'geocoder') {
 
-    $location = openlayers_geocoder_parse_response($object->Placemark[0]);
-
     $tokens = array();
-    $tokens['address'] = $location['address'];
-    $tokens['accuracy'] = $location['Accuracy'];
-    $tokens['administrative_area'] = $location['AdministrativeAreaName'];
-    $tokens['dependent_locality'] = $location['DependentLocalityName'];
-    $tokens['postal_code'] = $location['PostalCodeNumber'];
-    $tokens['thoroughfare'] = $location['ThoroughfareName'];
-    $tokens['locality'] = $location['LocalityName'];
-    $tokens['country'] = $location['CountryName'];
-    $tokens['country_code'] = $location['CountryNameCode'];
-    $tokens['sub_administrative_area'] = $location['SubAdministrativeAreaName'];
+    $result = module_invoke_all('token_list', 'geocoder');
+    foreach ($result[$type] as $name => $value) {
+      $tokens[$name] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+    }
+
+    // Keep v2 tokens for backward compatibility
+    $tokens['address'] = $object['components']['street_address'] ? $tokens['street_address'] : '';
+    $tokens['thoroughfare'] = $object['components']['route'] ? ($tokens['route'] .' '. $tokens['street_number']) : '';
+    $tokens['administrative_area'] = $object['components']['administrative_area_level_1'] ? $tokens['administrative_area_level_1'] : '';
+    $tokens['sub_administrative_area'] = $object['components']['administrative_area_level_2'] ? $tokens['administrative_area_level_2'] : '';
+    $tokens['dependent_locality'] = $object['components']['administrative_area_level_3'] ? $tokens['administrative_area_level_3'] : '';
 
     return $tokens;
   }
-}
-
-/**
- * Parse geocoder response looking for well known attributes.
- *
- * @param $response
- *    Geocoder response object
- * @param $result
- *    List of well known attributes
- */
-function openlayers_geocoder_parse_response(&$response, &$result = array()) {
-  $attributes = array('address', 'Accuracy', 'AdministrativeAreaName', 'DependentLocalityName', 'PostalCodeNumber', 'ThoroughfareName', 'LocalityName', 'CountryName', 'CountryNameCode', 'SubAdministrativeAreaName');
-  foreach ($response as $key => $value) {
-    if ((is_string($value) || is_int($value)) && in_array($key, $attributes)) {
-      $result[$key] = $value;
-    }
-    elseif (is_object($value) || is_array($value)) {
-      openlayers_geocoder_parse_response($value, $result);
-    }
-  }
-  return $result;
 }

@@ -20,15 +20,3 @@ function theme_openlayers_geocoder_widget_autocompletion_settings(&$form) {
   $header[] = t('Content');
   return theme('table', $header, $rows) . drupal_render($form);
 }
-
-
-/**
- * Display a single row of geocoding result.
- *
- * @param $result
- *  Geocoding result
- */
-function theme_openlayers_geocoder_result($result) {
-  return '';
-}
-

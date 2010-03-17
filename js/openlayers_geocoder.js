@@ -55,6 +55,9 @@ Drupal.Geocoder.prototype.process = function (query) {
 	  if (point.longitude && point.latitude) {
 
         var data = $('#openlayers-cck-widget-map-' + fieldname).data('openlayers');
+		if (!data.map.displayProjection) {
+			data.map.displayProjection = 4326;
+		}
         var displayProjection = new OpenLayers.Projection('EPSG:' + data.map.displayProjection);
         var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
         var vectorLayers = data.openlayers.getLayersBy('CLASS_NAME', "OpenLayers.Layer.Vector");

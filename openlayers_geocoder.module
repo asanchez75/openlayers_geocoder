@@ -39,6 +39,27 @@ function openlayers_geocoder_menu() {
 }
 
 /**
+ * Implementation of hook_openlayers_behaviors
+ */
+function openlayers_geocoder_openlayers_behaviors() {
+  return array(
+    'openlayers_geocoder_reverse_geocoding' => array(
+       'title' => t('Reverse Geocoding'),
+       'description' => t('Provides reverse geocoding for CCK fields.'),
+       'type' => 'layer',
+       'path' => drupal_get_path('module', 'openlayers_geocoder') .'/includes/behaviors',
+       'file' => 'openlayers_geocoder_reverse_geocoding.inc',
+       'ui_visibility' => FALSE,
+       'behavior' => array(
+         'class' => 'openlayers_geocoder_reverse_geocoding',
+         'parent' => 'openlayers_behavior',
+       ),
+    ),
+  );
+}
+
+
+/**
  * Implementation of hook_widget_info().
  */
 function openlayers_geocoder_widget_info() {
@@ -265,7 +286,7 @@ function openlayers_geocoder_response($address) {
       $components['street_address'] = $location['address'] = $result->formatted_address;
       $location['components'] = $components;
       $location['location'] = (array) $result->geometry->location;
-      $location['bounds'] = (array) $result->geometry->bounds;
+      $location['bounds'] = (array) $result->geometry->viewport;
       $locations[] = $location;
     }
   }

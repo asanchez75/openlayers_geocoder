@@ -12,9 +12,30 @@
  * Implementation of hook_token_list()
  */
 function openlayers_geocoder_token_list($type = 'all') {
+  $tokens = array();
+
+  if ($type == 'openlayers data') {
+
+    $layers = module_invoke('openlayers_views', 'openlayers_layers');
+    foreach ($layers as $layer_name => $layer) {
+      $list = array();
+      $layer = openlayers_layer_load($layer_name);
+      $features = $layer->get_features($layer->data['views']['view'], $layer->data['views']['display']);
+      foreach ($features as $feature) {
+        foreach ($feature['attributes'] as $attribute_name => $attribute) {
+          $parts = array();
+          $parts[] = $layer_name;
+          $parts[] = $attribute_name;
+          $key = implode('-', $parts);
+          $list[$key] = t('Attriubute: <em>!attribute_name</em>', array('!attribute_name' => $attribute_name));
+        }
+      }
+    }
+    $tokens['openlayers data'] = $list;
+  }
+
   if ($type == 'geocoder') {
 
-    $tokens = array();
     $tokens['geocoder']['street_address'] = t('Indicates a precise street address.');
     $tokens['geocoder']['route'] = t('Indicates a named route (such as "US 101").');
     $tokens['geocoder']['intersection'] = t('Indicates a major intersection, usually of two major roads.');
@@ -47,8 +68,9 @@ function openlayers_geocoder_token_list($type = 'all') {
     $tokens['geocoder']['sub_administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_2" instead.</b> Sub-administrative area');
     $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');
 
-    return $tokens;
   }
+
+  return $tokens;
 }
 
 /**
@@ -56,9 +78,24 @@ function openlayers_geocoder_token_list($type = 'all') {
  */
 function openlayers_geocoder_token_values($type, $object = NULL, $options = array()) {
 
-  if ($type == 'geocoder') {
+  $tokens = array();
+  if ($type == 'openlayers data') {
+    foreach ($object['layers'] as $layer_name => $layer) {
+      if ($layer['layer_type'] == 'openlayers_views_vector') {
+        foreach ($layer['features'] as $feature) {
+          foreach ($feature['attributes'] as $attribute_name => $attribute) {
+            $parts = array();
+            $parts[] = $layer_name;
+            $parts[] = $attribute_name;
+            $key = implode('-', $parts);
+            $tokens[$key] = $attribute;
+          }
+        }
+      }
+    }
+  }
 
-    $tokens = array();
+  if ($type == 'geocoder') {
     $result = module_invoke_all('token_list', 'geocoder');
     foreach ($result[$type] as $name => $value) {
       $tokens[$name] = isset($object['components'][$name]) ? $object['components'][$name] : '';
@@ -70,7 +107,7 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
     $tokens['administrative_area'] = $object['components']['administrative_area_level_1'] ? $tokens['administrative_area_level_1'] : '';
     $tokens['sub_administrative_area'] = $object['components']['administrative_area_level_2'] ? $tokens['administrative_area_level_2'] : '';
     $tokens['dependent_locality'] = $object['components']['administrative_area_level_3'] ? $tokens['administrative_area_level_3'] : '';
-
-    return $tokens;
   }
+
+  return $tokens;
 }

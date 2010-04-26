@@ -39,19 +39,19 @@ function openlayers_geocoder_menu() {
 }
 
 /**
- * Implementation of hook_openlayers_behaviors
+ * Implementation of hook_openlayers_behaviors()
  */
 function openlayers_geocoder_openlayers_behaviors() {
   return array(
-    'openlayers_geocoder_reverse_geocoding' => array(
-       'title' => t('Reverse Geocoding'),
-       'description' => t('Provides reverse geocoding for CCK fields.'),
-       'type' => 'layer',
+    'openlayers_geocoder_zoomtolocation' => array(
+       'title' => t('Zoom to location'),
+       'description' => t('Zoom to the boundary box of a specified location.'),
+       'type' => 'map',
        'path' => drupal_get_path('module', 'openlayers_geocoder') .'/includes/behaviors',
-       'file' => 'openlayers_geocoder_reverse_geocoding.inc',
-       'ui_visibility' => FALSE,
+       'file' => 'openlayers_geocoder_zoomtolocation.inc',
+       'ui_visibility' => TRUE,
        'behavior' => array(
-         'class' => 'openlayers_geocoder_reverse_geocoding',
+         'class' => 'openlayers_geocoder_zoomtolocation',
          'parent' => 'openlayers_behavior',
        ),
     ),
@@ -79,10 +79,12 @@ function openlayers_geocoder_widget_info() {
  * Implementation of hook_widget_settings().
  */
 function openlayers_geocoder_widget_settings($op, $widget) {
+
+  $type_name = str_replace('-', '_', arg(3));
   switch ($op) {
     case 'form':
-      $form = module_invoke('openlayers_cck', 'widget_settings', 'form', $widget);
 
+      $form = module_invoke('openlayers_cck', 'widget_settings', 'form', $widget);
       if (module_exists('token')) {
 
         $form['autocompletion'] = array(
@@ -95,7 +97,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         );
 
         foreach (content_fields() as $name => $field) {
-          if ($field['type_name'] == arg(3) && $field['widget']['type'] == 'text_textfield') {
+          if ($field['type_name'] == $type_name && $field['widget']['type'] == 'text_textfield') {
             $row = array();
             $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_enable']);
             $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_override']);
@@ -118,9 +120,10 @@ function openlayers_geocoder_widget_settings($op, $widget) {
       return $form;
 
     case 'save':
+
       $elements = module_invoke('openlayers_cck', 'widget_settings', 'save', $widget);
       foreach (content_fields() as $name => $field) {
-        if ($field['type_name'] == arg(3) && $field['type'] == 'text') {
+        if ($field['type_name'] == $type_name && $field['type'] == 'text') {
           $elements[] = 'autocompletion_'. $name .'_enable';
           $elements[] = 'autocompletion_'. $name .'_override';
           $elements[] = 'autocompletion_'. $name .'_content';

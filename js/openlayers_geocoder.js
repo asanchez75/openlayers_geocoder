@@ -60,15 +60,15 @@ Drupal.Geocoder.prototype.process = function (query) {
 		}
         var displayProjection = new OpenLayers.Projection('EPSG:' + data.map.displayProjection);
         var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
-        var vectorLayers = data.openlayers.getLayersBy('CLASS_NAME', "OpenLayers.Layer.Vector");
+        var vectorLayer = data.openlayers.getLayersBy('drupalID', "openlayers_drawfeatures_layer");
         var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 
         // Add point. For each new search all previous features will be removed.
         data.openlayers.zoomToExtent(bounds);
-        vectorLayers[0].removeFeatures(vectorLayers[0].features);
-        vectorLayers[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
-	      
+        vectorLayer[0].removeFeatures(vectorLayer[0].features);
+        vectorLayer[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
+
         // Adding CCK fields autocompletion
         if (point.fields) {
     	  jQuery.each(point.fields, function () {

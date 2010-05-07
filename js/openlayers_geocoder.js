@@ -64,20 +64,27 @@ Drupal.Geocoder.prototype.process = function (query) {
         var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 
-        // Add point. For each new search all previous features will be removed.
-        data.openlayers.zoomToExtent(bounds);
-        vectorLayer[0].removeFeatures(vectorLayer[0].features);
+        //Remove all points, unless CCK widget settings prevent it.
+        if (point.keep_points) {
+            data.openlayers.setCenter(new OpenLayers.LonLat(point.longitude, point.latitude).transform(displayProjection, projection));
+        }
+        else {
+	        vectorLayer[0].removeFeatures(vectorLayer[0].features);
+	        data.openlayers.zoomToExtent(bounds);
+	        // Adding CCK fields autocompletion
+	        if (point.fields) {
+	      	  jQuery.each(point.fields, function () {
+	      		  $("input[name*='" + this.name + "']").val(this.value);
+	      		  if (!this.override) {
+	          	    $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
+	      		  }
+	      	  });
+	        }	  
+        }
+        
+        //Add point to map.
         vectorLayer[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
 
-        // Adding CCK fields autocompletion
-        if (point.fields) {
-    	  jQuery.each(point.fields, function () {
-    		  $("input[name*='" + this.name + "']").val(this.value);
-    		  if (!this.override) {
-        	    $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
-    		  }
-    	  });
-        }	  
 	  }
    }
  });

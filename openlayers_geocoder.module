@@ -85,6 +85,21 @@ function openlayers_geocoder_widget_settings($op, $widget) {
     case 'form':
 
       $form = module_invoke('openlayers_cck', 'widget_settings', 'form', $widget);
+
+      $form['multiple_points'] = array(
+        '#tree' => FALSE,
+        '#type' => 'fieldset',
+        '#title' => t('Multiple points'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      );
+      $form['multiple_points']['keep_points'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Input multiple points'),
+        '#description' => t('By default, when autocomplete runs, it overwrites previously plotted points. This will allow you to use the widget for multiple points. Note: choosing to keep previously inserted points will disable autocompletion.'),
+        '#default_value' => $widget['keep_points'],
+      );
+
       if (module_exists('token')) {
 
         $form['autocompletion'] = array(
@@ -129,6 +144,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
           $elements[] = 'autocompletion_'. $name .'_content';
         }
       }
+      $elements[] = 'keep_points';
       return $elements;
   }
 }
@@ -209,6 +225,7 @@ function openlayers_geocoder_coordinates() {
   $location['longitude'] = 0;
   $location['box'] = array();
   $location['fields'] = array();
+  $location['keep_points'] = false;
 
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
@@ -224,13 +241,19 @@ function openlayers_geocoder_coordinates() {
     $location['box']['west'] = $result['bounds']['southwest']->lng;
 
     $field = content_fields($fieldname);
-    if (module_exists('token') && $field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
-      $fields = openlayers_geocoder_widget_parse_settings($field['widget']);
-      foreach ($fields as $name => $settings) {
-        if ($settings['enable']) {
-          $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
-          $location['fields'][$name]['name'] = $name;
-          $location['fields'][$name]['override'] = $settings['override'];
+    if ($field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
+      if (isset($field['widget']['keep_points'])) {
+        $location['keep_points'] = $field['widget']['keep_points'];
+      }
+
+      if (module_exists('token')) {
+        $fields = openlayers_geocoder_widget_parse_settings($field['widget']);
+        foreach ($fields as $name => $settings) {
+          if ($settings['enable']) {
+            $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
+            $location['fields'][$name]['name'] = $name;
+            $location['fields'][$name]['override'] = $settings['override'];
+          }
         }
       }
     }

@@ -60,14 +60,15 @@ function openlayers_geocoder_token_list($type = 'all') {
     $tokens['geocoder']['street_number'] = t('Indicates the precise street number.');
     $tokens['geocoder']['floor'] = t('Indicates the floor of a building address.');
     $tokens['geocoder']['room'] = t('Indicates the room of a building address.');
+    $tokens['geocoder']['latitude'] = t('Latitude');
+    $tokens['geocoder']['longitude'] = t('Longitude');
 
     // Keep v2 tokens for backward compatibility
     $tokens['geocoder']['address'] = t(' <b>Deprecated: use "street_address" instead.</b> Full address');
     $tokens['geocoder']['thoroughfare'] = t(' <b>Deprecated: use "route" or "street_address" instead.</b> Thoroughfare (<em>i.e. street name + number</em>)');
     $tokens['geocoder']['administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_1" instead.</b> Administrative area');
     $tokens['geocoder']['sub_administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_2" instead.</b> Sub-administrative area');
-    $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');
-
+    $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');    
   }
 
   return $tokens;
@@ -100,6 +101,9 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
     foreach ($result[$type] as $name => $value) {
       $tokens[$name] = isset($object['components'][$name]) ? $object['components'][$name] : '';
     }
+
+    $tokens['latitude'] = $object['location']['lat'];
+    $tokens['longitude'] = $object['location']['lng'];
 
     // Keep v2 tokens for backward compatibility
     $tokens['address'] = $object['components']['street_address'] ? $tokens['street_address'] : '';

@@ -111,8 +111,8 @@ function openlayers_geocoder_widget_settings($op, $widget) {
           '#theme' => 'openlayers_geocoder_widget_autocompletion_settings',
         );
 
-        foreach (content_fields() as $name => $field) {
-          if ($field['type_name'] == $type_name && $field['widget']['type'] == 'text_textfield') {
+        foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
+          if ($field['widget']['type'] == 'text_textfield') {
             $row = array();
             $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_enable']);
             $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_override']);
@@ -137,8 +137,8 @@ function openlayers_geocoder_widget_settings($op, $widget) {
     case 'save':
 
       $elements = module_invoke('openlayers_cck', 'widget_settings', 'save', $widget);
-      foreach (content_fields() as $name => $field) {
-        if ($field['type_name'] == $type_name && $field['type'] == 'text') {
+      foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
+        if ($field['type'] == 'text') {
           $elements[] = 'autocompletion_'. $name .'_enable';
           $elements[] = 'autocompletion_'. $name .'_override';
           $elements[] = 'autocompletion_'. $name .'_content';
@@ -334,4 +334,18 @@ function openlayers_geocoder_widget_parse_settings(&$widget) {
     }
   }
   return $settings;
+}
+
+/**
+ * Helper function to get the fields for a particular content type.
+ * Helps resolve the case in which content fields were created in another
+ * content type, and content_fields won't work correctly.
+ *
+ * @param $type_name The name of the content type.
+ * @return Array in the same structure as if it were coming from content_fields()
+ */
+function openlayers_geocoder_get_fields($type_name) {
+  $type = content_types($type_name);
+  $fields = $type['fields'];
+  return $type['fields'];
 }

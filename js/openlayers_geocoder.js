@@ -74,7 +74,6 @@ Drupal.Geocoder.prototype.process = function (query) {
 	        // Adding CCK fields autocompletion
 	        if (point.fields) {
 	      	  jQuery.each(point.fields, function () {
-	      	    console.log(point);
 	      		  $(this.type + "[name*='" + this.name + "']").attr('value', this.value);
 	      		  if (!this.override) {
 	          	    $(this.type + "[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');

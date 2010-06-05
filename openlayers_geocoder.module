@@ -112,12 +112,19 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         );
 
         foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
-          if ($field['widget']['type'] == 'text_textfield') {
+          if ($field['multiple'] == 0 && in_array($field['widget']['type'], array('text_textfield', 'optionwidgets_select')) ) {
             $row = array();
+            
+            $type = 'input';
+            if ($field['widget']['type'] == 'optionwidgets_select') {
+              $type = 'select';
+            }
+            
             $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_enable']);
             $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_override']);
             $row['autocompletion_'. $name .'_field'] = array('#value' => $field['widget']['label']);
             $row['autocompletion_'. $name .'_content'] = array('#type' => 'textfield', '#default_value' => $widget['autocompletion_'. $name .'_content']);
+            $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#value' => $type);
             $form['autocompletion'][] = $row;
           }
         }
@@ -142,6 +149,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
           $elements[] = 'autocompletion_'. $name .'_enable';
           $elements[] = 'autocompletion_'. $name .'_override';
           $elements[] = 'autocompletion_'. $name .'_content';
+          $elements[] = 'autocompletion_'. $name .'_type';
         }
       }
       $elements[] = 'keep_points';
@@ -253,6 +261,7 @@ function openlayers_geocoder_coordinates() {
             $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
             $location['fields'][$name]['name'] = $name;
             $location['fields'][$name]['override'] = $settings['override'];
+            $location['fields'][$name]['type'] = $settings['type'];
           }
         }
       }
@@ -341,7 +350,7 @@ function openlayers_geocoder_response($address) {
 function openlayers_geocoder_widget_parse_settings(&$widget) {
   $settings = array();
   foreach ($widget as $key => $value) {
-    if (preg_match_all('/autocompletion_(.*)_(enable|override|content)/', $key, $matches)) {
+    if (preg_match_all('/autocompletion_(.*)_(enable|override|content|type)/', $key, $matches)) {
       $settings[$matches[1][0]][$matches[2][0]] = $value;
     }
   }

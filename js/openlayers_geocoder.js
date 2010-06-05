@@ -74,9 +74,10 @@ Drupal.Geocoder.prototype.process = function (query) {
 	        // Adding CCK fields autocompletion
 	        if (point.fields) {
 	      	  jQuery.each(point.fields, function () {
-	      		  $("input[name*='" + this.name + "']").val(this.value);
+	      	    console.log(point);
+	      		  $(this.type + "[name*='" + this.name + "']").attr('value', this.value);
 	      		  if (!this.override) {
-	          	    $("input[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
+	          	    $(this.type + "[name*='" + this.name + "']").attr('readonly', 'TRUE').addClass('readonly');
 	      		  }
 	      	  });
 	        }	  

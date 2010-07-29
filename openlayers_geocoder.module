@@ -367,6 +367,5 @@ function openlayers_geocoder_widget_parse_settings(&$widget) {
  */
 function openlayers_geocoder_get_fields($type_name) {
   $type = content_types($type_name);
-  $fields = $type['fields'];
-  return $type['fields'];
+  return isset($type['fields']) ? $type['fields'] : array();
 }

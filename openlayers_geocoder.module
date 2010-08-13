@@ -10,6 +10,8 @@
 
 define('GOOGLE_GEOCODER_URL', 'http://maps.google.com/maps/api/geocode/json?');
 define('GOOGLE_GEOCODER_STATUS_OK', 'OK');
+define('OPENLAYERS_GEOCODER_POSITION_ABOVE', -10);
+define('OPENLAYERS_GEOCODER_POSITION_BELOW', +10);
 
 
 /**
@@ -100,6 +102,24 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         '#default_value' => $widget['keep_points'],
       );
 
+      $form['layout'] = array(
+        '#tree' => FALSE,
+        '#type' => 'fieldset',
+        '#title' => t('Layout'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+      );
+      $form['layout']['position'] = array(
+        '#type' => 'select',
+        '#title' => t('Address field position'),
+        '#description' => t("The position of the 'Search address' autocomplete field (relative to the OpenLayers map)."),
+        '#default_value' => isset($widget['position']) ? $widget['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+        '#options' => array(
+          OPENLAYERS_GEOCODER_POSITION_ABOVE => t('Above'),
+          OPENLAYERS_GEOCODER_POSITION_BELOW => t('Below'),
+        ),
+      );
+
       if (module_exists('token')) {
 
         $form['autocompletion'] = array(
@@ -153,6 +173,7 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         }
       }
       $elements[] = 'keep_points';
+      $elements[] = 'position';
       return $elements;
   }
 }
@@ -172,7 +193,7 @@ function openlayers_geocoder_widget(&$form, &$form_state, $field, $items, $delta
     '#title' => t('Search address'),
     '#type' => 'textfield',
     '#autocomplete_path' => 'openlayers/geocoder',
-    '#weight' => 1,
+    '#weight' => $field['widget']['position'],
     '#attributes' => array(
       'geoautocomplete' => TRUE,
       'fieldname' => $field['field_name'],

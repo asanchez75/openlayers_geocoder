@@ -54,7 +54,7 @@ Drupal.Geocoder.prototype.process = function (query) {
 
   $.ajax({
     type: 'POST',
-    url: this.data.db.uri + '/coordinates',
+    url: this.data.db.uri + '/process',
     data: data,
     dataType: 'json',
     success: function(point) {

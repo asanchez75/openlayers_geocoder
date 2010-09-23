@@ -47,10 +47,15 @@ Drupal.Geocoder.prototype.process = function (query) {
   var fieldname = $(this.data.input).attr('fieldname');
   var dashed = $(this.data.input).attr('dashed');
   
+  var data = {
+    query:query,
+    fieldname:fieldname
+  };
+
   $.ajax({
     type: 'POST',
     url: this.data.db.uri + '/coordinates',
-    data: 'query=' + query + '&fieldname=' + fieldname,
+    data: data,
     dataType: 'json',
     success: function(point) {
 

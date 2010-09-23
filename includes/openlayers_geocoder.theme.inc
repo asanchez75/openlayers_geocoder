@@ -4,7 +4,7 @@
 /**
  * Theme funciton for OpenLayers Geocoder widget autocompletion setting
  */
-function theme_openlayers_geocoder_widget_autocompletion_settings(&$form) {
+function theme_openlayers_geocoder_widget_autocompletion_settings($form) {
   foreach (element_children($form) as $key) {
     if (is_numeric($key)) {
       $row = array();

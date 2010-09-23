@@ -252,6 +252,7 @@ function openlayers_geocoder_process_response() {
 
   $query = $_POST['query'];
   $fieldname = $_POST['fieldname'];
+  $contenttype = $_POST['content_type'];
 
   if ($response = openlayers_geocoder_response($query)) {
 
@@ -263,7 +264,7 @@ function openlayers_geocoder_process_response() {
     $location['box']['south'] = $result['bounds']['southwest']->lat;
     $location['box']['west'] = $result['bounds']['southwest']->lng;
 
-    $field = content_fields($fieldname);
+    $field = content_fields($fieldname, $contenttype);
     if ($field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
       if (isset($field['widget']['keep_points'])) {
         $location['keep_points'] = $field['widget']['keep_points'];

@@ -46,13 +46,11 @@ Drupal.Geocoder.prototype.process = function (query) {
   
   var fieldname = $(this.data.input).attr('fieldname');
   var dashed = $(this.data.input).attr('dashed');
-  var formid = $("input[name=form_id][value*=_node_form]").val();
-  var contenttype = formid.replace("_node_form", "");
-  
+
   var data = {
     query:query,
-    fieldname:fieldname,
-    content_type:contenttype
+    fieldname: fieldname,
+    content_type: $('#edit-' + dashed + '-openlayers-geocoder-content-type').val()
   };
 
   $.ajax({

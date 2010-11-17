@@ -201,6 +201,10 @@ function openlayers_geocoder_widget(&$form, &$form_state, $field, $items, $delta
     ),
   );
 
+  $element['openlayers_geocoder_content_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $field['type_name'],
+  );
 
   $element['#type'] = 'openlayers_wkt_widget';
   $element['#default_value'] = $items;

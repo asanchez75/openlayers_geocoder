@@ -68,7 +68,7 @@ function openlayers_geocoder_widget_info() {
   return array(
     'openlayers_geocoder_widget' => array(
       'label' => t('OpenLayers Geocoder'),
-      'field types' => array('openlayers_wkt', 'geo'),
+      'field types' => array('openlayers_wkt'),
       'multiple values' => CONTENT_HANDLE_MODULE,
       'callbacks' => array(
         'default value' => CONTENT_CALLBACK_DEFAULT,
@@ -135,16 +135,12 @@ function openlayers_geocoder_widget_settings($op, $widget) {
           if ($field['multiple'] == 0 && in_array($field['widget']['type'], array('text_textfield', 'optionwidgets_select')) ) {
             $row = array();
             
-            $type = 'input';
-            if ($field['widget']['type'] == 'optionwidgets_select') {
-              $type = 'select';
-            }
-            
+            $type = ($field['widget']['type'] == 'optionwidgets_select') ? 'select' : 'input';
             $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_enable']);
             $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => $widget['autocompletion_'. $name .'_override']);
             $row['autocompletion_'. $name .'_field'] = array('#value' => $field['widget']['label']);
             $row['autocompletion_'. $name .'_content'] = array('#type' => 'textfield', '#default_value' => $widget['autocompletion_'. $name .'_content']);
-            $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#value' => $type);
+            $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#default_value' => $type);
             $form['autocompletion'][] = $row;
           }
         }
@@ -157,7 +153,6 @@ function openlayers_geocoder_widget_settings($op, $widget) {
         );
 
         $form['autocompletion']['token_help']['help']['#value'] = theme('token_help', 'geocoder');
-
       }
       return $form;
 

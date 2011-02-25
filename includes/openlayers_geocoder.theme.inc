@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Theme funciton for OpenLayers Geocoder widget autocompletion setting

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file: openlayers-geocoder-result.tpl.php
  *

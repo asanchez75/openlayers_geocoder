@@ -148,5 +148,7 @@ function openlayers_geocoder_geocode_node(&$node, $field_name, $q, $save_node = 
     if ($save_node) {
       node_save($node);
     }
+    return TRUE;    
   }
+  return FALSE;
 }

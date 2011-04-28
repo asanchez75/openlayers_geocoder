@@ -116,3 +116,37 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
 
   return $tokens;
 }
+
+/**
+ * Progammatically geocode a node.
+ * 
+ * @param $node
+ *    Node object
+ * @param $field_name
+ *    OpenLayers CCK field using OpenLayers Geocoder widget
+ * @param $q
+ *    Location query
+ * @param $save_node 
+ *    Save or just modify node object
+ */
+function openlayers_geocoder_geocode_node(&$node, $field_name, $q, $save_node = FALSE) {
+
+  $field = content_fields($field_name, $node->type);
+  if (isset($node->{$field_name}) && $response = openlayers_geocoder_response($q)) {
+    
+    $location = $response[0]['location'];
+    $node->{$field_name}[0]['openlayers_wkt'] = 'GEOMETRYCOLLECTION(POINT('. $location['lng'] .' '. $location['lat'] .'))';
+
+    $settings = openlayers_geocoder_widget_parse_settings($field['widget']);
+    foreach ($settings as $name => $setting) {
+      if ($setting['enable']) {
+        $content = token_replace($setting['content'], 'geocoder', $response[0]);
+        $node->{$name}[0]['value'] = $content;    
+      }
+    }
+    
+    if ($save_node) {
+      node_save($node);
+    }
+  }
+}

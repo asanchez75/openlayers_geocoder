@@ -172,6 +172,20 @@ function openlayers_geocoder_widget_settings($op, $widget) {
   }
 }
 
+/*
+ * Add code to get rid of PHP 5.3 warning
+ * This is a temporary solution until the problem can be resolved in core.
+ * Note that while this code allows arguments to be passed by reference,
+ * passing arguments by reference in call_user_func_array() is deprecated in PHP 5.3
+ */
+
+function ol_module_invoke($module, $hook, $args = array()) {
+  $function = $module . '_' . $hook;
+  if (module_hook($module, $hook)) {
+    return call_user_func_array($function, $args);
+  }
+}
+
 /**
  * Implementation of hook_widget().
  */
@@ -180,9 +194,14 @@ function openlayers_geocoder_widget(&$form, &$form_state, &$field, $items, $delt
   drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') .'/openlayers_geocoder.css');
   drupal_add_js(drupal_get_path('module', 'openlayers_geocoder') .'/js/openlayers_geocoder.js');
 
+  $args = array();
+  $args[] = &$form;
+  $args[] = &$form_state;
+  $args[] = $field;
+  $args[] = $items;
+  $args[] = $delta;
   $element = array();
-  $element = module_invoke('openlayers_cck', 'widget', $form, $form_state, $field, $items, $delta);
-
+  $element = ol_module_invoke('openlayers_cck', 'widget', $args);
   $element['openlayers_geocoder_query'] = array(
     '#title' => t('Search address'),
     '#type' => 'textfield',

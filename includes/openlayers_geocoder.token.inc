@@ -16,8 +16,8 @@ function openlayers_geocoder_token_list($type = 'all') {
   if ($type == 'openlayers data') {
 
     $layers = module_invoke('openlayers_views', 'openlayers_layers');
+    $list = array();
     foreach ($layers as $layer_name => $layer) {
-      $list = array();
       $layer = openlayers_layer_load($layer_name);
       $features = $layer->get_features($layer->data['views']['view'], $layer->data['views']['display']);
       foreach ($features as $feature) {

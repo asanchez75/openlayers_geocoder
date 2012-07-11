@@ -186,13 +186,26 @@ function ol_module_invoke($module, $hook, $args = array()) {
   }
 }
 
+
+/**
+ * After build callback. Allows us to add js and css if form fails validation.
+ *
+ * @param  $form
+ * @param  $form_state
+ * @return $form
+ */
+function openlayers_geocoder_after_build(&$form, &$form_state) {
+  drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') . '/openlayers_geocoder.css');
+  drupal_add_js(drupal_get_path('module', 'openlayers_geocoder') . '/js/openlayers_geocoder.js');
+  return $form;
+}
+
+
 /**
  * Implementation of hook_widget().
  */
 function openlayers_geocoder_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
-
-  drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') .'/openlayers_geocoder.css');
-  drupal_add_js(drupal_get_path('module', 'openlayers_geocoder') .'/js/openlayers_geocoder.js');
+  $form['#after_build'][] = 'openlayers_geocoder_after_build';
 
   $args = array();
   $args[] = &$form;

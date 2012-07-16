@@ -45,7 +45,7 @@ class openlayers_geocoder_zoomtolocation extends openlayers_behavior {
 
     $return = array();
     $query = token_replace($this->options['query'], 'openlayers data', $this->map);
-    if($response = openlayers_geocoder_response($query)) {
+    if ($response = openlayers_geocoder_response($query)) {
       $return = $response[0]['bounds'];
     }
 

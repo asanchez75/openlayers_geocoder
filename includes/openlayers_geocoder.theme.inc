@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Theme funciton for OpenLayers Geocoder widget autocompletion setting
  */
 function theme_openlayers_geocoder_widget_autocompletion_settings($form) {

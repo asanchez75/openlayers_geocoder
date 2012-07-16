@@ -1,5 +1,6 @@
 <?php
 
 /**
- * @file Openlayers Geocoder reverse geocoding behavior
+ * @file
+ * Openlayers Geocoder reverse geocoding behavior
  */

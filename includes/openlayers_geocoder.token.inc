@@ -8,7 +8,7 @@
  */
 
 /**
- * Implementation of hook_token_list()
+ * Implementation of hook_token_list().
  */
 function openlayers_geocoder_token_list($type = 'all') {
   $tokens = array();
@@ -68,14 +68,14 @@ function openlayers_geocoder_token_list($type = 'all') {
     $tokens['geocoder']['thoroughfare'] = t(' <b>Deprecated: use "route" or "street_address" instead.</b> Thoroughfare (<em>i.e. street name + number</em>)');
     $tokens['geocoder']['administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_1" instead.</b> Administrative area');
     $tokens['geocoder']['sub_administrative_area'] = t(' <b>Deprecated: use "administrative_area_level_2" instead.</b> Sub-administrative area');
-    $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');    
+    $tokens['geocoder']['dependent_locality'] = t(' <b>Deprecated: use "administrative_area_level_3" instead.</b> Dependent locality');
   }
 
   return $tokens;
 }
 
 /**
- * Implementation of hook_token_values()
+ * Implementation of hook_token_values().
  */
 function openlayers_geocoder_token_values($type, $object = NULL, $options = array()) {
 
@@ -105,7 +105,7 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
     $tokens['latitude'] = $object['location']['lat'];
     $tokens['longitude'] = $object['location']['lng'];
     $tokens['formatted_address'] = $object['address'];
-    
+
     // Keep v2 tokens for backward compatibility
     $tokens['address'] = $object['components']['street_address'] ? $tokens['street_address'] : '';
     $tokens['thoroughfare'] = $object['components']['route'] ? ($tokens['route'] .' '. $tokens['street_number']) : '';
@@ -119,21 +119,20 @@ function openlayers_geocoder_token_values($type, $object = NULL, $options = arra
 
 /**
  * Progammatically geocode a node.
- * 
+ *
  * @param $node
  *    Node object
  * @param $field_name
  *    OpenLayers CCK field using OpenLayers Geocoder widget
  * @param $q
  *    Location query
- * @param $save_node 
+ * @param $save_node
  *    Save or just modify node object
  */
 function openlayers_geocoder_geocode_node(&$node, $field_name, $q, $save_node = FALSE) {
 
   $field = content_fields($field_name, $node->type);
   if (isset($node->{$field_name}) && $response = openlayers_geocoder_response($q)) {
-    
     $location = $response[0]['location'];
     $node->{$field_name}[0]['openlayers_wkt'] = 'GEOMETRYCOLLECTION(POINT('. $location['lng'] .' '. $location['lat'] .'))';
 
@@ -141,14 +140,14 @@ function openlayers_geocoder_geocode_node(&$node, $field_name, $q, $save_node = 
     foreach ($settings as $name => $setting) {
       if ($setting['enable']) {
         $content = token_replace($setting['content'], 'geocoder', $response[0]);
-        $node->{$name}[0]['value'] = $content;    
+        $node->{$name}[0]['value'] = $content;
       }
     }
-    
+
     if ($save_node) {
       node_save($node);
     }
-    return TRUE;    
+    return TRUE;
   }
   return FALSE;
 }

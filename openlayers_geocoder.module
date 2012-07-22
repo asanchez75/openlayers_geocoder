@@ -230,7 +230,6 @@ function openlayers_geocoder_widget(&$form, &$form_state, &$field, $items, $delt
   $element['#type'] = 'openlayers_wkt_widget';
   $element['#default_value'] = $items;
 
-  unset($field['widget']['description']);
   return $element;
 }
 

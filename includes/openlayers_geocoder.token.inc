@@ -13,24 +13,25 @@
 function openlayers_geocoder_token_list($type = 'all') {
   $tokens = array();
 
-  if ($type == 'openlayers data') {
-
-    $layers = module_invoke('openlayers_views', 'openlayers_layers');
-    $list = array();
-    foreach ($layers as $layer_name => $layer) {
-      $layer = openlayers_layer_load($layer_name);
-      $features = $layer->get_features($layer->data['views']['view'], $layer->data['views']['display']);
-      foreach ($features as $feature) {
-        foreach ($feature['attributes'] as $attribute_name => $attribute) {
-          $parts = array();
-          $parts[] = $layer_name;
-          $parts[] = $attribute_name;
-          $key = implode('-', $parts);
-          $list[$key] = t('Attriubute: <em>!attribute_name</em>', array('!attribute_name' => $attribute_name));
+  if ($type == 'openlayers data' || $type == 'all') {
+    if (module_exists('openlayers_views')) {
+      $layers = module_invoke('openlayers_views', 'openlayers_layers');
+      $list = array();
+      foreach ($layers as $layer_name => $layer) {
+        $layer = openlayers_layer_load($layer_name);
+        $features = $layer->get_features($layer->data['views']['view'], $layer->data['views']['display']);
+        foreach ($features as $feature) {
+          foreach ($feature['attributes'] as $attribute_name => $attribute) {
+            $parts = array();
+            $parts[] = $layer_name;
+            $parts[] = $attribute_name;
+            $key = implode('-', $parts);
+            $list[$key] = t('Attriubute: <em>!attribute_name</em>', array('!attribute_name' => $attribute_name));
+          }
         }
       }
-    }
     $tokens['openlayers data'] = $list;
+    }
   }
 
   if ($type == 'geocoder') {

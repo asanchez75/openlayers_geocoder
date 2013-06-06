@@ -2,21 +2,26 @@
 
 /**
  * @file
- * Theme funciton for OpenLayers Geocoder widget autocompletion setting
+ * Theme function for OpenLayers Geocoder widget autocompletion setting
  */
-function theme_openlayers_geocoder_widget_autocompletion_settings($form) {
-  foreach (element_children($form) as $key) {
-    if (is_numeric($key)) {
+function theme_openlayers_geocoder_widget_autocompletion_settings($element) {
+  $childs = element_children($element['element']);
+  foreach ($childs as $key => $value) {
+    if (is_numeric($value)) {
       $row = array();
-      foreach (element_children($form[$key]) as $setting) {
-        $row[] = drupal_render($form[$key][$setting]);
+      $subchilds = element_children($element['element'][$key]);
+      foreach ($subchilds as $field) {
+        $row[] = drupal_render($element['element'][$key][$field]);
       }
       $rows[] = $row;
+    }
+    else {
+      $token_help =drupal_render($element['element'][$value]);
     }
   }
   $header[] = t('Enable');
   $header[] = t('Override');
   $header[] = t('Field');
   $header[] = t('Content');
-  return theme('table', $header, $rows) . drupal_render($form);
+  return theme('table', array('header' => $header, 'rows' => $rows)) . $token_help;
 }

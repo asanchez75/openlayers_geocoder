@@ -4,4 +4,4 @@ description = Provides OpenLayers field widget with geocoding capabilities.
 core = 7.x
 package = OpenLayers
 dependencies[] = openlayers
-
+dependencies[] = geofield

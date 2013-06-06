@@ -59,7 +59,7 @@ function openlayers_geocoder_openlayers_behaviors() {
 /**
  * Implementation of hook_widget_info().
  */
-function openlayers_geocoder_widget_info() {
+function openlayers_geocoder_field_widget_info() {
   return array(
     'openlayers_geocoder_widget' => array(
       'label' => t('OpenLayers Geocoder'),

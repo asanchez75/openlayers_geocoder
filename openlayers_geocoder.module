@@ -91,7 +91,7 @@ function openlayers_geocoder_field_widget_settings_form($field, $instance) {
       '#type' => 'checkbox',
       '#title' => t('Input multiple points'),
       '#description' => t('By default, when autocomplete runs, it overwrites previously plotted points. This will allow you to use the widget for multiple points. Note: choosing to keep previously inserted points will disable autocompletion.'),
-      '#default_value' => $settings['multiple_points']['keep_points'],
+      '#default_value' => isset($settings['multiple_points']['keep_points']) ? $settings['multiple_points']['keep_points'] : 0,
     );
 
     $form['layout'] = array(

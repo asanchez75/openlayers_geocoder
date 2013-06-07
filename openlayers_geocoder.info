@@ -5,3 +5,6 @@ core = 7.x
 package = OpenLayers
 dependencies[] = openlayers
 dependencies[] = geofield
+
+scripts[] = js/openlayers_geocoder.js
+stylesheets[all][] = openlayers_geocoder.css

@@ -181,7 +181,7 @@ function openlayers_geocoder_after_build(&$form, &$form_state) {
  * Implementation of hook_widget().
  */
 function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-
+  
   $widget = $instance['widget'];
   $settings = $widget['settings'];
   if (module_exists('geofield') && $field['type'] == 'geofield') {
@@ -212,8 +212,6 @@ function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $in
   //   '#value' => $field['type_name'],
   // );
 
-  // $element['#type'] = 'openlayers_wkt_widget';
-  // $element['#default_value'] = $items;
   // This validate function computes all other columns from the master field
   $element['#element_validate'] = array('openlayers_geocoder_element_validate');
 
@@ -299,7 +297,7 @@ function openlayers_geocoder_process_response() {
       }
     }
   }
-  drupal_json($location);
+  drupal_json_output($location);
 }
 
 /**

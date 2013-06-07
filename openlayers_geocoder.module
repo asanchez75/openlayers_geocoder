@@ -142,7 +142,7 @@ function openlayers_geocoder_field_widget_settings_form($field, $instance) {
         '#collapsed' => TRUE,
       );
 
-      $form['autocompletion']['token_help']['help']['#value'] = theme('token_help', 'geocoder');
+      $form['autocompletion']['token_help']['help'] = array('#theme' => 'token_tree', '#token_types' => array('geocoder'), '#global_types' => TRUE, '#click_insert' => TRUE);
     }
   }
   return $form;

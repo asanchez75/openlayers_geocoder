@@ -63,8 +63,8 @@ function openlayers_geocoder_token_info() {
     );
 
   $geocoder['administrative_area_level_3'] = array(
-    'name' => t('Indicates a third-order civil entity below the country level. This type indicates a minor civil division. Not all nations exhibit these administrative levels.');,
-    'description' => t('Indicates a third-order civil entity below the country level. This type indicates a minor civil division. Not all nations exhibit these administrative levels.');,
+    'name' => t('Indicates a third-order civil entity below the country level. This type indicates a minor civil division. Not all nations exhibit these administrative levels.'),
+    'description' => t('Indicates a third-order civil entity below the country level. This type indicates a minor civil division. Not all nations exhibit these administrative levels.'),
     );
 
 
@@ -190,24 +190,9 @@ function openlayers_geocoder_token_info() {
 /**
  * Implementation of hook_token_values().
  */
-function openlayers_geocoder_token_values($type, $object = NULL, $options = array()) {
-
+function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  // @todo support for openlayers_data
   $tokens = array();
-  if ($type == 'openlayers data') {
-    foreach ($object['layers'] as $layer_name => $layer) {
-      if ($layer['layer_type'] == 'openlayers_views_vector') {
-        foreach ($layer['features'] as $feature) {
-          foreach ($feature['attributes'] as $attribute_name => $attribute) {
-            $parts = array();
-            $parts[] = $layer_name;
-            $parts[] = $attribute_name;
-            $key = implode('-', $parts);
-            $tokens[$key] = $attribute;
-          }
-        }
-      }
-    }
-  }
 
   if ($type == 'geocoder') {
     $result = module_invoke_all('token_list', 'geocoder');

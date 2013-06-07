@@ -194,6 +194,25 @@ function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array
   // @todo support for openlayers_data
   $tokens = array();
 
+  if ($type == 'geocoder' && !empty($data['node'])) {
+    $node = $data['node'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        // Simple key values on the comment.
+        case 'cid':
+          $replacements[$original] = $node->cid;
+          break;
+        case 'cid':
+          $replacements[$original] = $comment->cid;
+          break;
+        case 'cid':
+          $replacements[$original] = $comment->cid;
+          break;
+      }
+    }
+  }
+
   if ($type == 'geocoder') {
     $result = module_invoke_all('token_list', 'geocoder');
     foreach ($result[$type] as $name => $value) {

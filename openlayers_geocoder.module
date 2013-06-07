@@ -180,39 +180,56 @@ function openlayers_geocoder_after_build(&$form, &$form_state) {
 /**
  * Implementation of hook_widget().
  */
-function openlayers_geocoder_widget(&$form, &$form_state, &$field, $items, $delta = 0) {
-  $form['#after_build'][] = 'openlayers_geocoder_after_build';
+function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+  //form['#after_build'][] = 'openlayers_geocoder_after_build';
+  //dpm(func_get_args());
+  $widget = $instance['widget'];
+  $settings = $widget['settings'];
 
-  $args = array();
-  $args[] = &$form;
-  $args[] = &$form_state;
-  $args[] = $field;
-  $args[] = $items;
-  $args[] = $delta;
-  $element = array();
-  $element = ol_module_invoke('openlayers_cck', 'widget', $args);
-  $element['openlayers_geocoder_query'] = array(
-    '#title' => t('Search address'),
-    '#type' => 'textfield',
-    '#autocomplete_path' => 'openlayers/geocoder/response',
-    '#weight' => isset($field['widget']['position']) ? $field['widget']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
-    '#description' => $field['widget']['description'],
-    '#attributes' => array(
-      'geoautocomplete' => TRUE,
-      'fieldname' => $field['field_name'],
-      'dashed' => str_replace('_', '-', $field['field_name']),
-    ),
-  );
-  $element['openlayers_geocoder_content_type'] = array(
-    '#type' => 'hidden',
-    '#value' => $field['type_name'],
-  );
 
-  $element['#type'] = 'openlayers_wkt_widget';
-  $element['#default_value'] = $items;
+  if (module_exists('geofield') && $field['type'] == 'geofield') {
+    $element = geofield_get_base_element($base, $items, $delta);
+  }
 
+  if ($widget['type'] == 'openlayers_geocoder_widget') {
+    $element['wkt']['#title'] = 'Well Known Text';
+    $element['wkt']['#type'] = 'textarea';
+    $element['master_column']['#value'] = 'wkt';
+  }
+
+  // $element['openlayers_geocoder_query'] = array(
+  //   '#title' => t('Search address'),
+  //   '#type' => 'textfield',
+  //   '#autocomplete_path' => 'openlayers/geocoder/response',
+  //   '#weight' => isset($field['widget']['position']) ? $field['widget']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+  //   //'#description' => $field['widget']['description'],
+  //   '#attributes' => array(
+  //     'geoautocomplete' => TRUE,
+  //     'fieldname' => $field['field_name'],
+  //     'dashed' => str_replace('_', '-', $field['field_name']),
+  //   ),
+  // );
+
+
+  // $element['openlayers_geocoder_content_type'] = array(
+  //   '#type' => 'hidden',
+  //   '#value' => $field['type_name'],
+  // );
+
+  // $element['#type'] = 'openlayers_wkt_widget';
+  // $element['#default_value'] = $items;
+  // This validate function computes all other columns from the master field
+  $element['#element_validate'] = array('openlayers_geocoder_element_validate');
+  //$element['#element_validate'] = array('geofield_element_validate');  
   return $element;
 }
+
+function openlayers_geocoder_element_validate($element, &$form_state) {
+  $values = array(array('wkt' => $element['wkt']['#value']));
+  form_set_value($element, $values, $form_state);
+}
+
+
 
 /**
  * Implementation of hook_theme().

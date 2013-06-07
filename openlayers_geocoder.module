@@ -181,12 +181,9 @@ function openlayers_geocoder_after_build(&$form, &$form_state) {
  * Implementation of hook_widget().
  */
 function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-  //form['#after_build'][] = 'openlayers_geocoder_after_build';
-  //dpm(func_get_args());
+
   $widget = $instance['widget'];
   $settings = $widget['settings'];
-
-
   if (module_exists('geofield') && $field['type'] == 'geofield') {
     $element = geofield_get_base_element($base, $items, $delta);
   }
@@ -197,18 +194,17 @@ function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $in
     $element['master_column']['#value'] = 'wkt';
   }
 
-  // $element['openlayers_geocoder_query'] = array(
-  //   '#title' => t('Search address'),
-  //   '#type' => 'textfield',
-  //   '#autocomplete_path' => 'openlayers/geocoder/response',
-  //   '#weight' => isset($field['widget']['position']) ? $field['widget']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
-  //   //'#description' => $field['widget']['description'],
-  //   '#attributes' => array(
-  //     'geoautocomplete' => TRUE,
-  //     'fieldname' => $field['field_name'],
-  //     'dashed' => str_replace('_', '-', $field['field_name']),
-  //   ),
-  // );
+  $element['openlayers_geocoder_query'] = array(
+    '#title' => t('search address'),
+    '#type' => 'textfield',
+    '#autocomplete_path' => 'openlayers/geocoder/response',
+    '#weight' => isset($settings['position']) ? $settings['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+    '#attributes' => array(
+      'geoautocomplete' => true,
+      'fieldname' => $field['field_name'],
+      'dashed' => str_replace('_', '-', $field['field_name']),
+    ),
+  );
 
 
   // $element['openlayers_geocoder_content_type'] = array(
@@ -220,7 +216,7 @@ function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $in
   // $element['#default_value'] = $items;
   // This validate function computes all other columns from the master field
   $element['#element_validate'] = array('openlayers_geocoder_element_validate');
-  //$element['#element_validate'] = array('geofield_element_validate');  
+
   return $element;
 }
 
@@ -229,15 +225,13 @@ function openlayers_geocoder_element_validate($element, &$form_state) {
   form_set_value($element, $values, $form_state);
 }
 
-
-
 /**
  * Implementation of hook_theme().
  */
 function openlayers_geocoder_theme($existing, $type, $theme, $path) {
   return array(
     'openlayers_geocoder_result' => array(
-      'arguments' => array('result' => NULL),
+      'render element' => 'result',
       'template' => 'openlayers-geocoder-result',
       'path' => drupal_get_path('module', 'openlayers_geocoder') .'/theme',
     ),
@@ -251,14 +245,13 @@ function openlayers_geocoder_theme($existing, $type, $theme, $path) {
  * Get response from from Google geocoding web service
  */
 function openlayers_geocoder_get_response($query = '') {
-
   $locations = array();
   if ($response = openlayers_geocoder_response($query)) {
     foreach ($response as $location) {
       $locations[$location['address']] = theme('openlayers_geocoder_result', $location['components']);
     }
   }
-  drupal_json($locations);
+  drupal_json_output($locations);
 }
 
 /**

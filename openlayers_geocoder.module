@@ -181,9 +181,19 @@ function openlayers_geocoder_after_build(&$form, &$form_state) {
  * Implementation of hook_widget().
  */
 function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-  
+
   $widget = $instance['widget'];
   $settings = $widget['settings'];
+
+  // Make map for input
+  $rendered_map = _openlayers_field_render_element_map($field_name, $field['widget']['label'], $element['#value'], $field);
+
+  // Create map element
+  $element['map'] = array(
+    '#value' => theme('openlayers_cck_map', $field, $rendered_map),
+  );
+
+
   if (module_exists('geofield') && $field['type'] == 'geofield') {
     $element = geofield_get_base_element($base, $items, $delta);
   }
@@ -397,4 +407,55 @@ function openlayers_geocoder_widget_parse_settings(&$widget) {
 function openlayers_geocoder_get_fields($type_name) {
   $fields = field_info_instances("node", $type_name);
   return isset($fields) ? $fields : array();
+}
+
+/**
+ * Render Map for Widget
+ *
+ * @param $field_name
+ *   CCK name of field
+ * @param $values
+ *   Current default values
+ * @param $field
+ *   Array of field data
+ * @return
+ *   Rendered map array
+ */
+function _openlayers_field_render_element_map($field_name = '', $field_label = '', $values = array(), $field = array()) {
+
+  $field_id = 'edit-' . str_replace('_', '-', $field_name) . '-openlayers-wkt';
+
+  // Get map to use for field
+  if (isset($field['widget']['openlayers_cck_preset_map'])) {
+    $preset = openlayers_preset_load(
+      $field['widget']['openlayers_cck_preset_map']);
+    $map = $preset->data;
+  }
+  else {
+    $preset = openlayers_preset_load(
+      variable_get('openlayers_default_preset', 'default'));
+    $map = $preset->data;
+  }
+
+  $map['id'] = OPENLAYERS_CCK_WIDGET_MAP_ID_PREFIX . '-' . $field_name;
+
+  if ($field['multiple'] == 0) {
+    $limit = 1;
+  }
+  elseif ($field['multiple'] > 1) {
+    $limit = $field['multiple'];
+  }
+  else {
+    $limit = 0;
+  }
+
+  // Make sure that our display projection matches the database projection
+  // TODO: rewrite
+  $map['behaviors']['openlayers_behavior_drawfeatures'] = array(
+    'element_id' => $field_id,
+    'feature_types' => $field['openlayers_cck_feature_types'],
+    'feature_limit' => $limit,
+  );
+
+  return openlayers_render_map($map);
 }

@@ -1,35 +1,34 @@
+(function($){
 
-Drupal.behaviors.openlayers_geocoder = function (context) {
-
+Drupal.behaviors.openlayersGeocoder = {};
+Drupal.behaviors.openlayersGeocoder.attach = function(context, settings) {
   if (Drupal.jsAC) {
-    /**
-   * Hides the autocomplete suggestions
-   */
-    Drupal.jsAC.prototype.hidePopup = function (keycode) {
-      // Select item if the right key or mousebutton was pressed
-      if (this.selected && ((keycode && keycode != 46 && keycode != 8 && keycode != 27) || !keycode)) {
-        this.input.value = this.selected.autocompleteValue;
-      }
-      // Hide popup
-      var popup = this.popup;
-      if (popup) {
-        this.popup = null;
-        $(popup).fadeOut('fast', function() {
-          $(popup).remove();
-        });
-        // Add-on for OpenLayer Geocoder module
-        if ($(this.input).attr('geoautocomplete')) {
-          geocoder = new Drupal.Geocoder(this);
-          geocoder.process(this.input.value);
-        }
-      }
-      this.selected = false;
-    
-    };
-  
+     /**
+    * Hides the autocomplete suggestions
+    */
+  Drupal.jsAC.prototype.hidePopup = function (keycode) {
+  // Select item if the right key or mousebutton was pressed.
+  if (this.selected && ((keycode && keycode != 46 && keycode != 8 && keycode != 27) || !keycode)) {
+    this.input.value = $(this.selected).data('autocompleteValue');
   }
-  
+  // Hide popup.
+  var popup = this.popup;
+  if (popup) {
+    this.popup = null;
+    $(popup).fadeOut('fast', function () { $(popup).remove(); });
+    // Add-on for OpenLayer Geocoder module
+    if ($(this.input).attr('geoautocomplete')) {
+      geocoder = new Drupal.Geocoder(this);
+      geocoder.process(this.input.value);
+    }
+  }
+  this.selected = false;
+  $(this.ariaLive).empty();
 };
+
+
+  }
+}
 
 /**
  * Geocoder object
@@ -42,16 +41,22 @@ Drupal.Geocoder = function (data) {
  * Performs a search
  */
 Drupal.Geocoder.prototype.process = function (query) {
-  
   var fieldname = $(this.data.input).attr('fieldname');
   var dashed = $(this.data.input).attr('dashed');
+  var formid = $("input[name=form_id]").val();
+  var contenttype = formid.replace("_node_form", "");
 
+// console.log(fieldname);
+// console.log(dashed);
+// console.log(formid);
+// console.log(contenttype);
   var data = {
     query:query,
-    fieldname: fieldname,
-    content_type: $('#edit-' + dashed + '-openlayers-geocoder-content-type').val()
+    fieldname:fieldname,
+    content_type:contenttype
   };
-
+//console.log(data);
+console.log(this);
   $.ajax({
     type: 'POST',
     url: this.data.db.uri + '/process',
@@ -88,7 +93,7 @@ Drupal.Geocoder.prototype.process = function (query) {
             });
           }
         }
-        
+
         //Add point to map.
         vectorLayer[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);
       }
@@ -97,7 +102,44 @@ Drupal.Geocoder.prototype.process = function (query) {
 
 }
 
+Drupal.behaviors.openlayerFieldWktHide.attach = function(context, settings) {
+  // Hide WKT field and allow to toggle visibility.
+  if (typeof Drupal.settings.openlayers_cck.wkt_hide != 'undefined') {
+    var textShow = Drupal.settings.openlayers_cck.wkt_hide.text_show;
+    var textHide = Drupal.settings.openlayers_cck.wkt_hide.text_hide;
 
+    for (field in Drupal.settings.openlayers_cck.wkt_hide.fields) {
+      var fieldID = '#edit-' + field + '-openlayers-wkt-wrapper';
+
+      $(fieldID + ':not(.openlayers-cck-processed)').each(function() {
+        var $thisField = $(this);
+
+        $thisField.addClass('openlayers-cck-processed');
+        // Add a link to be able to hide and show, and hide by default.
+        var link = $('<a href="" id="' + field + '-toggle" class="openlayers-cck-hide-link">' + textShow + '</a>')
+          .data('fieldID', fieldID);
+        $thisField.before(link)
+          .hide();
+        $('#' + field + '-toggle').toggle(
+          function () {
+            var $thisLink = $(this);
+            var localFieldID = $thisLink.data('fieldID');
+            $(localFieldID).slideDown();
+            $thisLink.text(textHide);
+          },
+          function () {
+            var $thisLink = $(this);
+            var localFieldID = $thisLink.data('fieldID');
+            $(localFieldID).slideUp();
+            $thisLink.text(textShow);
+          }
+        );
+      });
+    }
+  }
+};
+
+})(jQuery);
 
 
 

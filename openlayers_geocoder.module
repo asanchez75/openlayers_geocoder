@@ -44,7 +44,6 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
   $widget = $instance['widget'];
   $settings = $widget['settings'];
   $type_name = $instance['bundle'];
-
   if ($instance['widget']['type'] == 'geofield_openlayers') {
     $form['instance']['widget']['settings']['openlayers_geocoder'] = array(
       '#type' => 'fieldset',
@@ -55,9 +54,10 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
       '#theme' => 'openlayers_geocoder_autocompletion_settings',
       '#weight' => 100,
     );
+    $i = -1;
     foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
-      $i = isset($i) ? $i + 1 : -1;
       if (in_array($field['widget']['type'], array('text_textfield', 'options_select')) ) {
+        $i++;
         $row = array();
         $type = ($field['widget']['type'] == 'options_select') ? 'select' : 'input';
         $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => isset($settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_enable']) ? $settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_enable'] : 0);
@@ -65,7 +65,7 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
         $row['autocompletion_'. $name .'_field'] = array('#type' => 'markup', '#markup' => $field['field_name']);
         $row['autocompletion_'. $name .'_content'] = array('#type' => 'textfield', '#default_value' => isset($settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_content']) ? $settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_content'] : NULL);
         $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#default_value' => $type);
-        $form['instance']['widget']['settings']['openlayers_geocoder'][] = $row;
+        $form['instance']['widget']['settings']['openlayers_geocoder'][$i] = $row;
       }
     }
     $form['instance']['widget']['settings']['openlayers_geocoder']['token_help'] = array(

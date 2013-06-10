@@ -71,7 +71,7 @@ Drupal.Geocoder.prototype.process = function (query) {
         }
         var displayProjection = new OpenLayers.Projection('EPSG:' + data.map.displayProjection);
         var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
-        var vectorLayer = data.openlayers.getLayersBy('drupalID', "openlayers_drawfeatures_layer");
+        var vectorLayer = data.openlayers.getLayersBy('drupalID', "openlayers_behavior_geofield");
         var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 

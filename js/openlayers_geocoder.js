@@ -63,10 +63,12 @@ Drupal.Geocoder.prototype.process = function (query) {
     data: data,
     dataType: 'json',
     success: function(point) {
-    console.log(point);
       if (point.longitude && point.latitude) {
 
-        var data = $('#openlayers-cck-widget-map-' + fieldname).data('openlayers');
+//.openlayers-map-geofield-widget-map
+// openlayers-map
+        var data = $('#edit-' + dashed + ' #openlayers-map').data('openlayers');
+
         if (!data.map.displayProjection) {
           data.map.displayProjection = 4326;
         }

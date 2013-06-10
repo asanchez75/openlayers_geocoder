@@ -1,11 +1,34 @@
 <?php
 
+define('GOOGLE_GEOCODER_URL', 'http://maps.google.com/maps/api/geocode/json?');
+define('GOOGLE_GEOCODER_STATUS_OK', 'OK');
+define('OPENLAYERS_GEOCODER_POSITION_ABOVE', -10);
+define('OPENLAYERS_GEOCODER_POSITION_BELOW', +10);
+
 /**
  * Implementation of hook_init().
  */
 function openlayers_geocoder_init() {
   module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.theme');
   module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.token');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function openlayers_geocoder_menu() {
+  $items = array();
+  $items['openlayers/geocoder/response'] = array(
+    'page callback' => 'openlayers_geocoder_get_response',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['openlayers/geocoder/response/process'] = array(
+    'page callback' => 'openlayers_geocoder_process_response',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
 }
 
 /**
@@ -126,20 +149,22 @@ function openlayers_geocoder_process_response() {
     $location['box']['south'] = $result['bounds']['southwest']->lat;
     $location['box']['west'] = $result['bounds']['southwest']->lng;
 
-    $field = content_fields($fieldname, $contenttype);
-    if ($field && $field['widget']['type'] == 'openlayers_geocoder_widget') {
+    // @TODO for any entity, not only for node entity
+    $field = field_info_instance('node', $fieldname, $contenttype);
+
+    if ($field && $field['widget']['type'] == 'geofield_openlayers') {
+      // @ check out keep_points
       if (isset($field['widget']['keep_points'])) {
         $location['keep_points'] = $field['widget']['keep_points'];
       }
-
       if (module_exists('token')) {
-        $fields = openlayers_geocoder_widget_parse_settings($field['widget']);
-        foreach ($fields as $name => $settings) {
+        $fields = openlayers_geocoder_widget_parse_settings($field['widget']['settings']['openlayers_geocoder']);
+         foreach ($fields as $name => $settings) {
           if ($settings['enable']) {
-            $location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
             $location['fields'][$name]['name'] = $name;
             $location['fields'][$name]['override'] = $settings['override'];
             $location['fields'][$name]['type'] = $settings['type'];
+            //$location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
           }
         }
       }
@@ -215,4 +240,42 @@ function openlayers_geocoder_response($address) {
     }
   }
   return $locations;
+}
+
+function openlayers_geocoder_field_widget_form_alter(&$element, &$form_state, $context) {
+  // Add a css class to widget form elements for all fields of type mytype.
+  if ($context['field']['type'] == 'geofield' && $context['instance']['widget']['type'] = 'geofield_openlayers') {
+    // Be sure not to overwrite existing attributes.
+    $element['openlayers_geocoder_query'] = array(
+      '#title' => t('search address'),
+      '#type' => 'textfield',
+      '#autocomplete_path' => 'openlayers/geocoder/response',
+      '#weight' => isset($settings['position']) ? $settings['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+      '#attributes' => array(
+        'geoautocomplete' => true,
+        'fieldname' => $element['#field_name'],
+        'dashed' => str_replace('_', '-', $element['#field_name']),
+      ),
+    );
+  }
+}
+
+
+/**
+ * Helper function: parse widget settings to retreive
+ * CCK field mapping information
+ *
+ * @param $widget
+ *    Field widget.
+ */
+function openlayers_geocoder_widget_parse_settings(&$widget) {
+  $settings = array();
+  foreach ($widget as $row) {
+    foreach ($row as $key => $value) {
+      if (preg_match_all('/autocompletion_(.*)_(enable|override|content|type)/', $key, $matches)) {
+        $settings[$matches[1][0]][$matches[2][0]] = $value;
+      }
+    }
+  }
+  return $settings;
 }

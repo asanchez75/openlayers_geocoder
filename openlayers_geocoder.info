@@ -5,6 +5,9 @@ core = 7.x
 package = OpenLayers
 dependencies[] = openlayers
 dependencies[] = geofield
+dependencies[] = geofield_map
+dependencies[] = token
 
 scripts[] = js/openlayers_geocoder.js
 stylesheets[all][] = openlayers_geocoder.css
+

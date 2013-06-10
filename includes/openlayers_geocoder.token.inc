@@ -192,28 +192,64 @@ function openlayers_geocoder_token_info() {
  */
 function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array $options = array()) {
   // @todo support for openlayers_data
-
   if ($type == 'geocoder' && !empty($data['openlayers_geocoder'])) {
     $object = $data['openlayers_geocoder'];
     foreach ($tokens as $name => $original) {
-      $tokens[$name] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+      switch ($name) {
+        case 'locality':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'administrative_area_level_2':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'administrative_area_level_1':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'country':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'country_code':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'street_address':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'latitude':
+          $replacements[$original] = isset($object['location']['lat']) ? $object['location']['lat'] : '';
+        break;
+        case 'longitude':
+          $replacements[$original] = isset($object['location']['lat']) ? $object['location']['lat'] : '';
+        break;
+        case 'formatted_address':
+          $replacements[$original] = isset($object['address']) ? $object['address'] : '';
+        break;
+        case 'street_address':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        // Keep v2 tokens for backward compatibility
+        case 'address':
+          $replacements[$original] = $object['components']['street_address'] ? $replacements['street_address'] : '';
+        break;
+        case 'thoroughfare':
+          $replacements[$original] = $object['components']['route'] ? $tokens['route'] . ' '. $replacements['street_number'] : '';
+        break;
+        case 'administrative_area':
+          $replacements[$original] = $object['components']['administrative_area_level_1'] ? $replacements['administrative_area_level_1'] : '';
+        break;
+        case 'sub_administrative_area':
+          $replacements[$original] = $object['components']['administrative_area_level_2'] ? $replacements['administrative_area_level_2'] : '';
+        break;
+        case 'dependent_locality':
+          $replacements[$original] = $object['components']['administrative_area_level_3'] ? $replacements['administrative_area_level_3'] : '';
+        break;
+
     }
 
-    $tokens['latitude'] = $object['location']['lat'];
-    $tokens['longitude'] = $object['location']['lng'];
-    $tokens['formatted_address'] = $object['address'];
-
-    // Keep v2 tokens for backward compatibility
-    $tokens['address'] = $object['components']['street_address'] ? $tokens['street_address'] : '';
-    $tokens['thoroughfare'] = $object['components']['route'] ? ($tokens['route'] .' '. $tokens['street_number']) : '';
-    $tokens['administrative_area'] = $object['components']['administrative_area_level_1'] ? $tokens['administrative_area_level_1'] : '';
-    $tokens['sub_administrative_area'] = $object['components']['administrative_area_level_2'] ? $tokens['administrative_area_level_2'] : '';
-    $tokens['dependent_locality'] = $object['components']['administrative_area_level_3'] ? $tokens['administrative_area_level_3'] : '';
   }
-  //dpm($tokens);
-  return $tokens;
-}
 
+  }
+  return $replacements;
+}
 /**
  * Progammatically geocode a node.
  *

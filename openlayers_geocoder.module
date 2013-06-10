@@ -164,7 +164,10 @@ function openlayers_geocoder_process_response() {
             $location['fields'][$name]['name'] = $name;
             $location['fields'][$name]['override'] = $settings['override'];
             $location['fields'][$name]['type'] = $settings['type'];
-            //$location['fields'][$name]['value'] = token_replace($settings['content'], 'geocoder', $result);
+            dpm($settings['content']);
+            dpm($result);
+            $location['fields'][$name]['value'] = token_replace($settings['content'], array('openlayers_geocoder' => $result));
+            dpm($location['fields'][$name]['value']);
           }
         }
       }

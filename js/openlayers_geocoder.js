@@ -63,6 +63,7 @@ Drupal.Geocoder.prototype.process = function (query) {
     data: data,
     dataType: 'json',
     success: function(point) {
+      console.log(point);
       if (point.longitude && point.latitude) {
         var data = $('#edit-' + dashed + ' #openlayers-map').data('openlayers');
 

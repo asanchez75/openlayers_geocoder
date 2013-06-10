@@ -188,34 +188,14 @@ function openlayers_geocoder_token_info() {
 }
 
 /**
- * Implementation of hook_token_values().
+ * Implementation of hook_tokens().
  */
 function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array $options = array()) {
   // @todo support for openlayers_data
-  $tokens = array();
 
-  if ($type == 'geocoder' && !empty($data['node'])) {
-    $node = $data['node'];
-
+  if ($type == 'geocoder' && !empty($data['openlayers_geocoder'])) {
+    $object = $data['openlayers_geocoder'];
     foreach ($tokens as $name => $original) {
-      switch ($name) {
-        // Simple key values on the comment.
-        case 'cid':
-          $replacements[$original] = $node->cid;
-          break;
-        case 'cid':
-          $replacements[$original] = $comment->cid;
-          break;
-        case 'cid':
-          $replacements[$original] = $comment->cid;
-          break;
-      }
-    }
-  }
-
-  if ($type == 'geocoder') {
-    $result = module_invoke_all('token_list', 'geocoder');
-    foreach ($result[$type] as $name => $value) {
       $tokens[$name] = isset($object['components'][$name]) ? $object['components'][$name] : '';
     }
 
@@ -230,7 +210,7 @@ function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array
     $tokens['sub_administrative_area'] = $object['components']['administrative_area_level_2'] ? $tokens['administrative_area_level_2'] : '';
     $tokens['dependent_locality'] = $object['components']['administrative_area_level_3'] ? $tokens['administrative_area_level_3'] : '';
   }
-
+  //dpm($tokens);
   return $tokens;
 }
 

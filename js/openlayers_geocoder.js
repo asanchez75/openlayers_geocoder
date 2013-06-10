@@ -64,9 +64,6 @@ Drupal.Geocoder.prototype.process = function (query) {
     dataType: 'json',
     success: function(point) {
       if (point.longitude && point.latitude) {
-
-//.openlayers-map-geofield-widget-map
-// openlayers-map
         var data = $('#edit-' + dashed + ' #openlayers-map').data('openlayers');
 
         if (!data.map.displayProjection) {
@@ -79,7 +76,8 @@ Drupal.Geocoder.prototype.process = function (query) {
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 
         //Remove all points, unless CCK widget settings prevent it.
-        if (point.keep_points) {
+        //console.log(point.keep_points);
+        if (point.keep_points == false) {
           data.openlayers.setCenter(new OpenLayers.LonLat(point.longitude, point.latitude).transform(displayProjection, projection));
         }
         else {

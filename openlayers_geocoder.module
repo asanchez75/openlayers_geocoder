@@ -7,230 +7,60 @@
  * @ingroup openlayers
  */
 
-define('GOOGLE_GEOCODER_URL', 'http://maps.google.com/maps/api/geocode/json?');
-define('GOOGLE_GEOCODER_STATUS_OK', 'OK');
-define('OPENLAYERS_GEOCODER_POSITION_ABOVE', -10);
-define('OPENLAYERS_GEOCODER_POSITION_BELOW', +10);
-
-
-/**
- * Implementation of hook_init().
- */
-function openlayers_geocoder_init() {
-  module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.theme');
-  module_load_include('inc', 'openlayers_geocoder', 'includes/openlayers_geocoder.token');
-}
-
-/**
- * Implementation of hook_menu().
- */
-function openlayers_geocoder_menu() {
-  $items = array();
-  $items['openlayers/geocoder/response'] = array(
-    'page callback' => 'openlayers_geocoder_get_response',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
-  $items['openlayers/geocoder/response/process'] = array(
-    'page callback' => 'openlayers_geocoder_process_response',
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
-  );
-  return $items;
-}
-
-/**
- * Implementation of hook_openlayers_behaviors().
- */
-function openlayers_geocoder_openlayers_behaviors() {
-  return array(
-    'openlayers_geocoder_zoomtolocation' => array(
-       'title' => t('Zoom to location'),
-       'description' => t('Zoom to the boundary box of a specified location.'),
-       'type' => 'map',
-       'path' => drupal_get_path('module', 'openlayers_geocoder') . '/includes/behaviors',
-       'file' => 'openlayers_geocoder_zoomtolocation.inc',
-       'ui_visibility' => TRUE,
-       'behavior' => array(
-         'class' => 'openlayers_geocoder_zoomtolocation',
-         'parent' => 'openlayers_behavior', ), ), );
-}
-
-/**
- * Implements hook_field_widget_info().
- */
-function openlayers_geocoder_field_widget_info() {
-  return array(
-    'openlayers_geocoder_widget' => array(
-      'label' => t('OpenLayers Geocoder'),
-      'field types' => array('geofield'),
-      'settings' => array('keep_points' => 0, 'position' => OPENLAYERS_GEOCODER_POSITION_BELOW),
-      'behaviors' => array(
-        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
-      ),
-    ),
-  );
-}
-
-/**
- * Implements hook_field_widget_settings_form().
- */
-function openlayers_geocoder_field_widget_settings_form($field, $instance) {
+function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
   $widget = $instance['widget'];
   $settings = $widget['settings'];
   $type_name = $instance['bundle'];
-  if ($widget['type'] == 'openlayers_geocoder_widget') {
 
-    $form['multiple_points'] = array(
+  if ($instance['widget']['type'] == 'geofield_openlayers') {
+    $form['instance']['widget']['settings']['openlayers_geocoder'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Multiple points'),
+      '#title' => t('Autocompletion'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
+      '#description' => t('Autocomplete CCK text fields with geocoding response values. Check <em>"Enable"</em> to activate autocompletion of a specified field. Check <em>"Override"</em> to let users override field values after autocompletion took place. Fill <em>"Content"</em> using the replacement patterns listed below.'),
+      '#theme' => 'openlayers_geocoder_autocompletion_settings',
+      '#weight' => 100,
     );
-    $form['multiple_points']['keep_points'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Input multiple points'),
-      '#description' => t('By default, when autocomplete runs, it overwrites previously plotted points. This will allow you to use the widget for multiple points. Note: choosing to keep previously inserted points will disable autocompletion.'),
-      '#default_value' => isset($settings['multiple_points']['keep_points']) ? $settings['multiple_points']['keep_points'] : 0,
-    );
-
-    $form['layout'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Layout'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-    );
-    $form['layout']['position'] = array(
-      '#type' => 'select',
-      '#title' => t('Address field position'),
-      '#description' => t("The position of the 'Search address' autocomplete field (relative to the OpenLayers map)."),
-      '#default_value' => isset($settings['layout']['position']) ? $settings['layout']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
-      '#options' => array(
-        OPENLAYERS_GEOCODER_POSITION_ABOVE => t('Above'),
-        OPENLAYERS_GEOCODER_POSITION_BELOW => t('Below'),
-      ),
-    );
-
-    if (module_exists('token')) {
-
-      $form['autocompletion'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Autocompletion'),
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-        '#description' => t('Autocomplete CCK text fields with geocoding response values. Check <em>"Enable"</em> to activate autocompletion of a specified field. Check <em>"Override"</em> to let users override field values after autocompletion took place. Fill <em>"Content"</em> using the replacement patterns listed below.'),
-        '#theme' => 'openlayers_geocoder_widget_autocompletion_settings',
-      );
-      foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
-        $i = isset($i) ? $i + 1 : -1;
-        if (in_array($field['widget']['type'], array('text_textfield', 'options_select')) ) {
-          $row = array();
-          $type = ($field['widget']['type'] == 'options_select') ? 'select' : 'input';
-          $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => isset($settings['autocompletion'][$i]['autocompletion_'. $name .'_enable']) ? $settings['autocompletion'][$i]['autocompletion_'. $name .'_enable'] : 0);
-          $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => isset($settings['autocompletion'][$i]['autocompletion_'. $name .'_override']) ? $settings['autocompletion'][$i]['autocompletion_'. $name .'_override'] : 0);
-          $row['autocompletion_'. $name .'_field'] = array('#type' => 'markup', '#markup' => $field['field_name']);
-          $row['autocompletion_'. $name .'_content'] = array('#type' => 'textfield', '#default_value' => isset($settings['autocompletion'][$i]['autocompletion_'. $name .'_content']) ? $settings['autocompletion'][$i]['autocompletion_'. $name .'_content'] : NULL);
-          $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#default_value' => $type);
-          $form['autocompletion'][] = $row;
-        }
+    foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
+      $i = isset($i) ? $i + 1 : -1;
+      if (in_array($field['widget']['type'], array('text_textfield', 'options_select')) ) {
+        $row = array();
+        $type = ($field['widget']['type'] == 'options_select') ? 'select' : 'input';
+        $row['autocompletion_'. $name .'_enable'] = array('#type' => 'checkbox', '#default_value' => isset($settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_enable']) ? $settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_enable'] : 0);
+        $row['autocompletion_'. $name .'_override'] = array('#type' => 'checkbox', '#default_value' => isset($settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_override']) ? $settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_override'] : 0);
+        $row['autocompletion_'. $name .'_field'] = array('#type' => 'markup', '#markup' => $field['field_name']);
+        $row['autocompletion_'. $name .'_content'] = array('#type' => 'textfield', '#default_value' => isset($settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_content']) ? $settings['openlayers_geocoder'][$i]['autocompletion_'. $name .'_content'] : NULL);
+        $row['autocompletion_'. $name .'_type'] = array('#type' => 'hidden', '#default_value' => $type);
+        $form['instance']['widget']['settings']['openlayers_geocoder'][] = $row;
       }
-
-      $form['autocompletion']['token_help'] = array(
-        '#title' => t('Replacement patterns'),
-        '#type' => 'fieldset',
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-      );
-
-      $form['autocompletion']['token_help']['help'] = array('#theme' => 'token_tree', '#token_types' => array('geocoder'), '#global_types' => TRUE, '#click_insert' => TRUE);
     }
-  }
-  return $form;
-}
+    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help'] = array(
+      '#title' => t('Replacement patterns'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
 
-/*
- * Add code to get rid of PHP 5.3 warning
- * This is a temporary solution until the problem can be resolved in core.
- * Note that while this code allows arguments to be passed by reference,
- * passing arguments by reference in call_user_func_array() is deprecated in PHP 5.3
- */
-
-function ol_module_invoke($module, $hook, $args = array()) {
-  $function = $module . '_' . $hook;
-  if (module_hook($module, $hook)) {
-    return call_user_func_array($function, $args);
+    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help']['help'] = array('#theme' => 'token_tree', '#token_types' => array('geocoder'), '#global_types' => TRUE, '#click_insert' => TRUE);
   }
+
 }
 
 
 /**
- * After build callback. Allows us to add js and css if form fails validation.
+ * Helper function to get the fields for a particular content type.
+ * Helps resolve the case in which content fields were created in another
+ * content type, and content_fields won't work correctly.
  *
- * @param  $form
- * @param  $form_state
- * @return $form
+ * @param $type_name The name of the content type.
+ * @return Array in the same structure as if it were coming from content_fields()
  */
-function openlayers_geocoder_after_build(&$form, &$form_state) {
-  drupal_add_css(drupal_get_path('module', 'openlayers_geocoder') . '/openlayers_geocoder.css');
-  drupal_add_js(drupal_get_path('module', 'openlayers_geocoder') . '/js/openlayers_geocoder.js');
-  return $form;
-}
-
-
-/**
- * Implementation of hook_widget().
- */
-function openlayers_geocoder_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
-
-  $widget = $instance['widget'];
-  $settings = $widget['settings'];
-
-  // Make map for input
-  $rendered_map = _openlayers_field_render_element_map($field_name, $field['widget']['label'], $element['#value'], $field);
-
-  // Create map element
-  $element['map'] = array(
-    '#value' => theme('openlayers_cck_map', $field, $rendered_map),
-  );
-
-
-  if (module_exists('geofield') && $field['type'] == 'geofield') {
-    $element = geofield_get_base_element($base, $items, $delta);
-  }
-
-  if ($widget['type'] == 'openlayers_geocoder_widget') {
-    $element['wkt']['#title'] = 'Well Known Text';
-    $element['wkt']['#type'] = 'textarea';
-    $element['master_column']['#value'] = 'wkt';
-  }
-
-  $element['openlayers_geocoder_query'] = array(
-    '#title' => t('search address'),
-    '#type' => 'textfield',
-    '#autocomplete_path' => 'openlayers/geocoder/response',
-    '#weight' => isset($settings['position']) ? $settings['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
-    '#attributes' => array(
-      'geoautocomplete' => true,
-      'fieldname' => $field['field_name'],
-      'dashed' => str_replace('_', '-', $field['field_name']),
-    ),
-  );
-
-
-  // $element['openlayers_geocoder_content_type'] = array(
-  //   '#type' => 'hidden',
-  //   '#value' => $field['type_name'],
-  // );
-
-  // This validate function computes all other columns from the master field
-  $element['#element_validate'] = array('openlayers_geocoder_element_validate');
-
-  return $element;
-}
-
-function openlayers_geocoder_element_validate($element, &$form_state) {
-  $values = array(array('wkt' => $element['wkt']['#value']));
-  form_set_value($element, $values, $form_state);
+function openlayers_geocoder_get_fields($type_name) {
+  $fields = field_info_instances("node", $type_name);
+  return isset($fields) ? $fields : array();
 }
 
 /**
@@ -243,7 +73,7 @@ function openlayers_geocoder_theme($existing, $type, $theme, $path) {
       'template' => 'openlayers-geocoder-result',
       'path' => drupal_get_path('module', 'openlayers_geocoder') .'/theme',
     ),
-    'openlayers_geocoder_widget_autocompletion_settings' => array(
+    'openlayers_geocoder_autocompletion_settings' => array(
       'render element' => 'element',
     ),
   );
@@ -377,85 +207,4 @@ function openlayers_geocoder_response($address) {
     }
   }
   return $locations;
-}
-
-/**
- * Helper function: parse widget settings to retreive
- * CCK field mapping information
- *
- * @param $widget
- *    Field widget.
- */
-function openlayers_geocoder_widget_parse_settings(&$widget) {
-  $settings = array();
-  foreach ($widget as $key => $value) {
-    if (preg_match_all('/autocompletion_(.*)_(enable|override|content|type)/', $key, $matches)) {
-      $settings[$matches[1][0]][$matches[2][0]] = $value;
-    }
-  }
-  return $settings;
-}
-
-/**
- * Helper function to get the fields for a particular content type.
- * Helps resolve the case in which content fields were created in another
- * content type, and content_fields won't work correctly.
- *
- * @param $type_name The name of the content type.
- * @return Array in the same structure as if it were coming from content_fields()
- */
-function openlayers_geocoder_get_fields($type_name) {
-  $fields = field_info_instances("node", $type_name);
-  return isset($fields) ? $fields : array();
-}
-
-/**
- * Render Map for Widget
- *
- * @param $field_name
- *   CCK name of field
- * @param $values
- *   Current default values
- * @param $field
- *   Array of field data
- * @return
- *   Rendered map array
- */
-function _openlayers_field_render_element_map($field_name = '', $field_label = '', $values = array(), $field = array()) {
-
-  $field_id = 'edit-' . str_replace('_', '-', $field_name) . '-openlayers-wkt';
-
-  // Get map to use for field
-  if (isset($field['widget']['openlayers_cck_preset_map'])) {
-    $preset = openlayers_preset_load(
-      $field['widget']['openlayers_cck_preset_map']);
-    $map = $preset->data;
-  }
-  else {
-    $preset = openlayers_preset_load(
-      variable_get('openlayers_default_preset', 'default'));
-    $map = $preset->data;
-  }
-
-  $map['id'] = OPENLAYERS_CCK_WIDGET_MAP_ID_PREFIX . '-' . $field_name;
-
-  if ($field['multiple'] == 0) {
-    $limit = 1;
-  }
-  elseif ($field['multiple'] > 1) {
-    $limit = $field['multiple'];
-  }
-  else {
-    $limit = 0;
-  }
-
-  // Make sure that our display projection matches the database projection
-  // TODO: rewrite
-  $map['behaviors']['openlayers_behavior_drawfeatures'] = array(
-    'element_id' => $field_id,
-    'feature_types' => $field['openlayers_cck_feature_types'],
-    'feature_limit' => $limit,
-  );
-
-  return openlayers_render_map($map);
 }

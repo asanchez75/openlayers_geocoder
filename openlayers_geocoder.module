@@ -170,7 +170,6 @@ function openlayers_geocoder_process_response() {
       }
     }
   }
-  dpm($location);
   drupal_json_output($location);
 }
 

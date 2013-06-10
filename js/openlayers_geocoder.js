@@ -78,7 +78,7 @@ Drupal.Geocoder.prototype.process = function (query) {
 
         //Remove all points, unless CCK widget settings prevent it.
         //console.log(point.keep_points);
-        if (point.keep_points == false) {
+        if (point.keep_points) {
           data.openlayers.setCenter(new OpenLayers.LonLat(point.longitude, point.latitude).transform(displayProjection, projection));
         }
         else {
@@ -86,6 +86,7 @@ Drupal.Geocoder.prototype.process = function (query) {
           data.openlayers.zoomToExtent(bounds);
           // Adding CCK fields autocompletion
           if (point.fields) {
+            console.log(point.fields);
             jQuery.each(point.fields, function () {
               $(this.type + "[name*='" + this.name + "']").attr('value', this.value);
               if (!this.override) {

@@ -199,10 +199,16 @@ function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array
         case 'locality':
           $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
         break;
+        case 'sublocality':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
         case 'administrative_area_level_2':
           $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
         break;
         case 'administrative_area_level_1':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'administrative_area_level_3':
           $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
         break;
         case 'country':
@@ -217,6 +223,51 @@ function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array
         case 'postal_code':
           $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
         break;
+        case 'route':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'intersection':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'political':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'colloquial_area':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'neighborhood':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'premise':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'subpremise':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'natural_feature':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'airport':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'park':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'point_of_interest':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'post_box':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'street_number':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'floor':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
+        case 'room':
+          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
+        break;
         case 'latitude':
           $replacements[$original] = isset($object['location']['lat']) ? $object['location']['lat'] : '';
         break;
@@ -225,9 +276,6 @@ function openlayers_geocoder_tokens($type, $tokens, array $data = array(), array
         break;
         case 'formatted_address':
           $replacements[$original] = isset($object['address']) ? $object['address'] : '';
-        break;
-        case 'street_address':
-          $replacements[$original] = isset($object['components'][$name]) ? $object['components'][$name] : '';
         break;
         // Keep v2 tokens for backward compatibility
         case 'address':

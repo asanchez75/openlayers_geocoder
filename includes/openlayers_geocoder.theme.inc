@@ -5,7 +5,6 @@
  * Theme function for OpenLayers Geocoder widget autocompletion setting
  */
 function theme_openlayers_geocoder_autocompletion_settings($element) {
- dpr($element)
   $childs = element_children($element['element']);
 
   foreach ($childs as $key => $value) {

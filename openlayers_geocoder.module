@@ -267,19 +267,21 @@ function openlayers_geocoder_response($address) {
 
 function openlayers_geocoder_field_widget_form_alter(&$element, &$form_state, $context) {
   // Add a css class to widget form elements for all fields of type mytype.
-  if ($context['field']['type'] == 'geofield' && $context['instance']['widget']['type'] = 'geofield_openlayers' && $context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['enable'] == 1) {
-    // Be sure not to overwrite existing attributes.
-    $element['openlayers_geocoder_query'] = array(
-      '#title' => t('search address'),
-      '#type' => 'textfield',
-      '#autocomplete_path' => 'openlayers/geocoder/response',
-      '#weight' => isset($context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position']) ? $context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
-      '#attributes' => array(
-        'geoautocomplete' => true,
-        'fieldname' => $element['#field_name'],
-        'dashed' => str_replace('_', '-', $element['#field_name']),
-      ),
-    );
+  if ($context['field']['type'] == 'geofield' && $context['instance']['widget']['type'] = 'geofield_openlayers' && isset($context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['enable'])) {
+    if ($context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['enable'] == 1) {
+      // Be sure not to overwrite existing attributes.
+      $element['openlayers_geocoder_query'] = array(
+        '#title' => t('search address'),
+        '#type' => 'textfield',
+        '#autocomplete_path' => 'openlayers/geocoder/response',
+        '#weight' => isset($context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position']) ? $context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+        '#attributes' => array(
+          'geoautocomplete' => true,
+          'fieldname' => $element['#field_name'],
+          'dashed' => str_replace('_', '-', $element['#field_name']),
+        ),
+      );
+    }
   }
 }
 

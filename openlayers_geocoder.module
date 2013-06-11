@@ -45,12 +45,13 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
   $settings = $widget['settings'];
   $type_name = $instance['bundle'];
   if ($instance['widget']['type'] == 'geofield_openlayers') {
+
     $form['instance']['widget']['settings']['openlayers_geocoder'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Autocompletion'),
+      '#title' => t('Openlayers Geocoder'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
-      '#description' => t('Autocomplete CCK text fields with geocoding response values. Check <em>"Enable"</em> to activate autocompletion of a specified field. Check <em>"Override"</em> to let users override field values after autocompletion took place. Fill <em>"Content"</em> using the replacement patterns listed below.'),
+      '#description' => t('Autocomplete text fields with geocoding response values. Check <em>"Enable"</em> to activate autocompletion of a specified field. Check <em>"Override"</em> to let users override field values after autocompletion took place. Fill <em>"Content"</em> using the replacement patterns listed below.'),
       '#theme' => 'openlayers_geocoder_autocompletion_settings',
       '#weight' => 100,
     );
@@ -68,14 +69,30 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
         $form['instance']['widget']['settings']['openlayers_geocoder'][$i] = $row;
       }
     }
+
     $form['instance']['widget']['settings']['openlayers_geocoder']['token_help'] = array(
-      '#title' => t('Replacement patterns'),
+      '#title' => t('Replacement patterns and position'),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
 
-    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help']['help'] = array('#theme' => 'token_tree', '#token_types' => array('geocoder'), '#global_types' => TRUE, '#click_insert' => TRUE);
+    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help']['help'] = array(
+      '#theme' => 'token_tree',
+      '#token_types' => array('geocoder'),
+      '#global_types' => TRUE,
+      '#click_insert' => TRUE
+      );
+    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position'] = array(
+      '#type' => 'select',
+      '#title' => t('Address field position'),
+      '#description' => t("The position of the 'Search address' autocomplete field (relative to the OpenLayers map)."),
+      '#default_value' => isset($settings['openlayers_geocoder']['token_help']['position']) ? $settings['openlayers_geocoder']['token_help']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+      '#options' => array(
+        OPENLAYERS_GEOCODER_POSITION_ABOVE => t('Above'),
+        OPENLAYERS_GEOCODER_POSITION_BELOW => t('Below'),
+      ),
+    );
   }
 
 }
@@ -250,7 +267,7 @@ function openlayers_geocoder_field_widget_form_alter(&$element, &$form_state, $c
       '#title' => t('search address'),
       '#type' => 'textfield',
       '#autocomplete_path' => 'openlayers/geocoder/response',
-      '#weight' => isset($settings['position']) ? $settings['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
+      '#weight' => isset($context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position']) ? $context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['position'] : OPENLAYERS_GEOCODER_POSITION_BELOW,
       '#attributes' => array(
         'geoautocomplete' => true,
         'fieldname' => $element['#field_name'],

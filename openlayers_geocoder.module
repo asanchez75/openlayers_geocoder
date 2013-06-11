@@ -71,7 +71,7 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
     }
 
     $form['instance']['widget']['settings']['openlayers_geocoder']['token_help'] = array(
-      '#title' => t('Replacement patterns and position'),
+      '#title' => t('Replacement patterns and settings'),
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
@@ -93,6 +93,12 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
         OPENLAYERS_GEOCODER_POSITION_BELOW => t('Below'),
       ),
     );
+
+    $form['instance']['widget']['settings']['openlayers_geocoder']['token_help']['enable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable Openlayers Geocoder'),
+      '#default_value' => isset($settings['openlayers_geocoder']['token_help']['enable']) ? $settings['openlayers_geocoder']['token_help']['enable'] : 1,
+      );
   }
 
 }
@@ -261,7 +267,7 @@ function openlayers_geocoder_response($address) {
 
 function openlayers_geocoder_field_widget_form_alter(&$element, &$form_state, $context) {
   // Add a css class to widget form elements for all fields of type mytype.
-  if ($context['field']['type'] == 'geofield' && $context['instance']['widget']['type'] = 'geofield_openlayers') {
+  if ($context['field']['type'] == 'geofield' && $context['instance']['widget']['type'] = 'geofield_openlayers' && $context['instance']['widget']['settings']['openlayers_geocoder']['token_help']['enable'] == 1) {
     // Be sure not to overwrite existing attributes.
     $element['openlayers_geocoder_query'] = array(
       '#title' => t('search address'),

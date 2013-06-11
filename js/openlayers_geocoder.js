@@ -46,24 +46,19 @@ Drupal.Geocoder.prototype.process = function (query) {
   var formid = $("input[name=form_id]").val();
   var contenttype = formid.replace("_node_form", "");
 
- //console.log(fieldname);
- //console.log(dashed);
- //console.log(formid);
- //console.log(contenttype);
   var data = {
     query:query,
     fieldname:fieldname,
     content_type:contenttype
   };
-//console.log(data);
-// console.log(this);
+
   $.ajax({
     type: 'POST',
     url: this.data.db.uri + '/process',
     data: data,
     dataType: 'json',
     success: function(point) {
-      console.log(point);
+
       if (point.longitude && point.latitude) {
         var data = $('#edit-' + dashed + ' #openlayers-map').data('openlayers');
 
@@ -76,12 +71,6 @@ Drupal.Geocoder.prototype.process = function (query) {
         var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
 
-        //Remove all points, unless CCK widget settings prevent it.
-        //console.log(point.keep_points);
-        if (point.keep_points) {
-          data.openlayers.setCenter(new OpenLayers.LonLat(point.longitude, point.latitude).transform(displayProjection, projection));
-        }
-        else {
           vectorLayer[0].removeFeatures(vectorLayer[0].features);
           data.openlayers.zoomToExtent(bounds);
           // Adding CCK fields autocompletion
@@ -94,7 +83,6 @@ Drupal.Geocoder.prototype.process = function (query) {
               }
             });
           }
-        }
 
         //Add point to map.
         vectorLayer[0].addFeatures([new OpenLayers.Feature.Vector(geometry)]);

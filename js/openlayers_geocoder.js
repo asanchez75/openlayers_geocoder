@@ -65,17 +65,15 @@ Drupal.Geocoder.prototype.process = function (query) {
         if (!data.map.displayProjection) {
           data.map.displayProjection = 4326;
         }
-        var displayProjection = new OpenLayers.Projection('EPSG:' + data.map.displayProjection);
-        var projection = new OpenLayers.Projection('EPSG:' + data.map.projection);
+        var displayProjection = new OpenLayers.Projection(data.map.displayProjection); // 4326
+        var projection = new OpenLayers.Projection(data.map.projection); // 3857
         var vectorLayer = data.openlayers.getLayersBy('drupalID', "openlayers_behavior_geofield");
         var geometry = new OpenLayers.Geometry.Point(point.longitude, point.latitude).transform(displayProjection, projection);
         var bounds = new OpenLayers.Bounds(point.box.west, point.box.south, point.box.east, point.box.north).transform(displayProjection, projection);
-
           vectorLayer[0].removeFeatures(vectorLayer[0].features);
           data.openlayers.zoomToExtent(bounds);
           // Adding CCK fields autocompletion
           if (point.fields) {
-            console.log(point.fields);
             jQuery.each(point.fields, function () {
               $(this.type + "[name*='" + this.name + "']").attr('value', this.value);
               if (!this.override) {

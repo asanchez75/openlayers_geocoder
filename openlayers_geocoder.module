@@ -44,6 +44,7 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
   $widget = $instance['widget'];
   $settings = $widget['settings'];
   $type_name = $instance['bundle'];
+  $entity_type =  $instance['entity_type'];
   if ($instance['widget']['type'] == 'geofield_openlayers') {
 
     $form['instance']['widget']['settings']['openlayers_geocoder'] = array(
@@ -56,7 +57,7 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
       '#weight' => 100,
     );
     $i = -1;
-    foreach (openlayers_geocoder_get_fields($type_name) as $name => $field) {
+    foreach (openlayers_geocoder_get_fields($entity_type, $type_name) as $name => $field) {
       if (in_array($field['widget']['type'], array('text_textfield', 'options_select')) ) {
         $i++;
         $row = array();
@@ -112,8 +113,8 @@ function openlayers_geocoder_form_field_ui_field_edit_form_alter(&$form, &$form_
  * @param $type_name The name of the content type.
  * @return Array in the same structure as if it were coming from content_fields()
  */
-function openlayers_geocoder_get_fields($type_name) {
-  $fields = field_info_instances("node", $type_name);
+function openlayers_geocoder_get_fields($entity_type, $type_name) {
+  $fields = field_info_instances($entity_type, $type_name);
   return isset($fields) ? $fields : array();
 }
 
@@ -160,7 +161,9 @@ function openlayers_geocoder_process_response() {
 
   $query = check_plain($_POST['query']);
   $fieldname = check_plain($_POST['fieldname']);
-  $contenttype = check_plain($_POST['content_type']);
+  $entity_type = check_plain($_POST['entity_type']);
+  $bundle_name = check_plain($_POST['bundle_name']);
+
 
   if ($response = openlayers_geocoder_response($query)) {
 
@@ -172,8 +175,7 @@ function openlayers_geocoder_process_response() {
     $location['box']['south'] = $result['bounds']['southwest']->lat;
     $location['box']['west'] = $result['bounds']['southwest']->lng;
 
-    // @TODO for any entity, not only for node entity
-    $field = field_info_instance('node', $fieldname, $contenttype);
+    $field = field_info_instance($entity_type, $fieldname, $bundle_name);
 
     if ($field && $field['widget']['type'] == 'geofield_openlayers') {
       // @ check out keep_points
@@ -278,6 +280,8 @@ function openlayers_geocoder_field_widget_form_alter(&$element, &$form_state, $c
         '#attributes' => array(
           'geoautocomplete' => true,
           'fieldname' => $element['#field_name'],
+          'entity_type' => $context['instance']['entity_type'],
+          'bundle_name' => $context['instance']['bundle'],                    
           'dashed' => str_replace('_', '-', $element['#field_name']),
         ),
       );

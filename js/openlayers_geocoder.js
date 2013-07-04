@@ -43,13 +43,14 @@ Drupal.Geocoder = function (data) {
 Drupal.Geocoder.prototype.process = function (query) {
   var fieldname = $(this.data.input).attr('fieldname');
   var dashed = $(this.data.input).attr('dashed');
-  var formid = $("input[name=form_id]").val();
-  var contenttype = formid.replace("_node_form", "");
+  var bundle_name = $(this.data.input).attr('bundle_name');
+  var entity_type = $(this.data.input).attr('entity_type');
 
   var data = {
     query:query,
     fieldname:fieldname,
-    content_type:contenttype
+    entity_type:entity_type,
+    bundle_name:bundle_name
   };
 
   $.ajax({
